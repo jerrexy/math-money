@@ -1,0 +1,112 @@
+{
+  "name": "MathMoneyFull",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "Shared": {
+        "$path": "src/shared"
+      },
+      "Assets": {
+        "$path": "assets/models/replicated"
+      }
+    },
+    "ServerScriptService": {
+      "Server": {
+        "$path": "src/server"
+      }
+    },
+    "ServerStorage": {
+      "Prefabs": {
+        "$path": "assets/models/server"
+      }
+    },
+    "StarterPlayer": {
+      "$properties": {
+        "CharacterWalkSpeed": 20,
+        "CameraMaxZoomDistance": 90
+      },
+      "StarterPlayerScripts": {
+        "Client": {
+          "$path": "src/client"
+        }
+      }
+    },
+    "Workspace": {
+      "$properties": {
+        "StreamingEnabled": false
+      },
+      "World": {
+        "$path": "assets/models/world/World.rbxm"
+      }
+    },
+    "Lighting": {
+      "$properties": {
+        "Technology": "Future",
+        "Brightness": 3,
+        "ClockTime": 14.2,
+        "GeographicLatitude": 28,
+        "Ambient": [
+          0.27,
+          0.27,
+          0.3
+        ],
+        "OutdoorAmbient": [
+          0.55,
+          0.56,
+          0.6
+        ],
+        "EnvironmentDiffuseScale": 1,
+        "EnvironmentSpecularScale": 1,
+        "ShadowSoftness": 0.25,
+        "ExposureCompensation": 0.1
+      },
+      "Atmosphere": {
+        "$className": "Atmosphere",
+        "$properties": {
+          "Density": 0.3,
+          "Offset": 0.25,
+          "Color": [
+            0.78,
+            0.87,
+            0.95
+          ],
+          "Decay": [
+            0.45,
+            0.58,
+            0.72
+          ],
+          "Glare": 0.15,
+          "Haze": 1.1
+        }
+      },
+      "Bloom": {
+        "$className": "BloomEffect",
+        "$properties": {
+          "Intensity": 0.6,
+          "Size": 24,
+          "Threshold": 1.6
+        }
+      },
+      "ColorCorrection": {
+        "$className": "ColorCorrectionEffect",
+        "$properties": {
+          "Saturation": 0.12,
+          "Contrast": 0.06,
+          "Brightness": 0.02
+        }
+      },
+      "SunRays": {
+        "$className": "SunRaysEffect",
+        "$properties": {
+          "Intensity": 0.06,
+          "Spread": 0.6
+        }
+      }
+    },
+    "SoundService": {
+      "$properties": {
+        "RespectFilteringEnabled": true
+      }
+    }
+  }
+}
