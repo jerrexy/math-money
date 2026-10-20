@@ -12,6 +12,7 @@ local ORDER = {
 	"GardenService",
 	"AvatarService",
 	"ShopService",
+	"AdminService",
 }
 
 -- a place built straight from the repo has no terrain yet: grow the island first

@@ -59,7 +59,7 @@ rokit.toml               toolchain (rojo, stylua, selene)
 src/
   server/                ServerScriptService.Server: bootstrap + Services/
     Services/            DataService, PlotService, MachineService, GardenService,
-                         AvatarService, ShopService
+                         AvatarService, ShopService, AdminService
   client/                StarterPlayerScripts.Client: bootstrap + Controllers/ + UI/
     Controllers/         HUD, round UI, machine renderer, shop, garden, report card, ...
     UI/Theme.luau        tiny UI kit (all UI is built in code)
@@ -115,6 +115,18 @@ session.
 model. Export with `mm_lib.export_fbx_bundle`, import the FBX once with
 **Import 3D**, then run `tools/pipeline/assemble_all.luau` to turn the import
 into prefabs. Details are in [`tools/pipeline/README.md`](tools/pipeline/README.md).
+
+## Admin commands
+
+Type these in the chat. Nobody else sees the message.
+
+- `!cash 5000` gives you money. `$5,000`, `2.5k` and `1m` work too, up to
+  $1,000,000,000 at a time.
+
+Only the game's owner and the user ids in `ADMINS` at the top of
+[`src/server/Services/AdminService.luau`](src/server/Services/AdminService.luau)
+can use them; anyone else gets a "Nice try!" message. Admin money doesn't count
+toward "earned in total" on the Report Card.
 
 ## Before publishing
 

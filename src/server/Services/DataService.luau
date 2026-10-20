@@ -302,14 +302,18 @@ function DataService:Update(player: Player, fn: (Profile) -> any): any
 	return result
 end
 
-function DataService:AddMoney(player: Player, amount: number)
+--- Pay a player. Pass ``earned = false`` for money that wasn't won at a machine
+--- (admin gifts), so the Report Card's "earned in total" stays honest.
+function DataService:AddMoney(player: Player, amount: number, earned: boolean?)
 	amount = math.floor(amount)
 	if amount <= 0 then
 		return
 	end
 	self:Update(player, function(profile)
 		profile.money += amount
-		profile.totalEarned += amount
+		if earned ~= false then
+			profile.totalEarned += amount
+		end
 	end)
 end
 
