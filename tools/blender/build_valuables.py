@@ -1,8 +1,8 @@
 """Loot that sits on the apparatus plate: coins, gems, gold bars, money bags...
 
-Each item is its own prefab (one Model per item) centred on the origin so the
+Each item is its own prefab (one Model per item) centered on the origin so the
 client can pile clones onto a plate. Gems are exported "tint" so the game can
-recolour them (ruby, sapphire, emerald, amethyst, topaz).
+recolor them (ruby, sapphire, emerald, amethyst, topaz).
 """
 
 import math

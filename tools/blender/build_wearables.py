@@ -1,7 +1,7 @@
 """Costumes (worn as Accessories) and fun-stuff items.
 
 Costume origins are the avatar attachment point they hang from:
-  Hat   -> HatAttachment (top centre of the head; hats sit ~0.25 lower so they hug it)
+  Hat   -> HatAttachment (top center of the head; hats sit ~0.25 lower so they hug it)
   Face  -> FaceFrontAttachment (front of the face at eye level)
   Waist -> WaistCenterAttachment
 Sized for a default ~1.2 stud head. Tools are modelled with their grip at the

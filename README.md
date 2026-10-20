@@ -1,14 +1,14 @@
 # Math Money 💰➗
 
-A Roblox game where elementary-school kids practise their maths facts by keeping
+A Roblox game where elementary-school kids practice their math facts by keeping
 a plate of treasure out of a vat of bubbling acid.
 
 Each of the 8 players claims a plot with four giant money machines:
 **Addition → Subtraction → Multiplication → Division**, which pay more as the
-maths gets harder. Walk up to a machine's computer, press **E**, and a 30-second
+math gets harder. Walk up to a machine's computer, press **E**, and a 30-second
 round starts:
 
-- The chain starts lowering the loot plate towards the acid.
+- The chain starts lowering the loot plate toward the acid.
 - ✅ **Right answer**: the chain stops for a few seconds (answers stack the pause).
 - ❌ **Wrong answer**: the engine grinds and smokes, the plate shakes, and jewels fall
   into the acid. The game shows the right answer and a hint, then asks that fact
@@ -21,8 +21,9 @@ round starts:
 Spend the money at **Ribbit's Emporium** (the frog in the top hat). It sells
 seeds that grow into flowers and forests in real time, garden decor (yes, a
 golden toilet), costumes, and silly stuff: a rubber chicken, a confetti cannon,
-speed sneakers, spring shoes and a pet rock. Money, levels, garden and items are
-saved.
+speed sneakers, spring shoes and a pet rock. The **🎒 My Stuff** button lets you
+put things on or take them off anywhere on the map. Money, levels, garden and
+items are saved.
 
 ## Learning design
 
@@ -33,7 +34,7 @@ saved.
 | ✖️ Multiplication | tables in teaching order: ×1 ×2 ×10 → ×5 → ×3 → ×4 → ×6 → ×7 → ×8 ×9 → ×11 ×12 + mix | $55 → $151 |
 | ➗ Division | the same tables as division facts | $80 → $220 |
 
-- **Levelling is earned by accuracy.** Net right answers (right − wrong) at your
+- **Leveling is earned by accuracy.** Net right answers (right − wrong) at your
   highest level unlock the next one, so guessing doesn't help. Players can pick
   an easier "practice" level that pays less.
 - About 30% of questions review earlier levels, and missed facts come back two

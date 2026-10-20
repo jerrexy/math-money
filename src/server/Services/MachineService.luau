@@ -3,7 +3,7 @@
 
 	A round (server authoritative):
 	  1. The owner presses E at the computer -> client gets an "Offer" dialog.
-	  2. "Start": the plate starts lowering towards the acid and a 30s timer runs.
+	  2. "Start": the plate starts lowering toward the acid and a 30s timer runs.
 	  3. Every question: right answer -> chain pauses for pauseTime (stacks a bit);
 	     wrong answer -> jewels fall off and the right answer is shown.
 	  4. Timer runs out first -> the player keeps what's left on the plate.
@@ -699,6 +699,8 @@ function MachineService:SpawnFor(plot, player: Player)
 			offer(rec, who)
 		end)
 		CollectionService:AddTag(model, TAG)
+		-- clients wait until every piece has arrived before animating the machine
+		model:SetAttribute("DescendantCount", #model:GetDescendants())
 		model.Parent = plot.machinesFolder
 	end
 end

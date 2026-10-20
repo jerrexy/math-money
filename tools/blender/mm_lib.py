@@ -11,8 +11,8 @@ Conventions
   "<Prefab>|@<Marker>" become marker CFrames in the prefab manifest.
 * Object custom properties drive the Roblox side (see Builder.build):
     rbx_material   Enum.Material name
-    tint           True: export no vertex colours, Roblox Color = the base colour
-                   (lets one mesh be recoloured per machine theme)
+    tint           True: export no vertex colors, Roblox Color = the base color
+                   (lets one mesh be recolored per machine theme)
     smooth_angle   auto-smooth angle in degrees (0 = flat shaded)
     uv_tile        studs per texture tile for the box-projected UVs
     collision      Enum.CollisionFidelity name
@@ -72,7 +72,7 @@ def purge_orphans():
 
 
 # --------------------------------------------------------------------------
-# Colours / materials
+# Colors / materials
 # --------------------------------------------------------------------------
 
 
@@ -119,7 +119,7 @@ def _matrix(loc=(0, 0, 0), rot=(0, 0, 0), scale=(1, 1, 1)):
 
 
 class Builder:
-    """Accumulates primitives (each with its own colour) into one mesh object.
+    """Accumulates primitives (each with its own color) into one mesh object.
 
     Every primitive takes ``loc`` (studs), ``rot`` (degrees, XYZ Euler) and
     ``color`` (sRGB 0-255). ``jitter`` nudges vertices randomly for an organic,
@@ -182,7 +182,7 @@ class Builder:
 
     def cyl(self, r, depth, loc=(0, 0, 0), rot=(0, 0, 0), color=(200, 200, 200), segs=24, r_top=None, caps=True,
             bevel=0.0, jitter=0.0, scale=(1, 1, 1)):
-        """Cylinder / cone / frustum along local Z, centred on ``loc``."""
+        """Cylinder / cone / frustum along local Z, centered on ``loc``."""
         tmp = bmesh.new()
         bmesh.ops.create_cone(
             tmp, cap_ends=caps, cap_tris=False, segments=segs, radius1=r,
@@ -276,7 +276,7 @@ class Builder:
         return self._merge(tmp, color, _matrix(loc, rot, scale), jitter)
 
     def extrude(self, poly, depth, loc=(0, 0, 0), rot=(0, 0, 0), color=(200, 200, 200), bevel=0.0, scale=(1, 1, 1)):
-        """Extrude a 2D polygon [(x, y), ...] (counter-clockwise) along local Z, centred."""
+        """Extrude a 2D polygon [(x, y), ...] (counter-clockwise) along local Z, centered."""
         tmp = bmesh.new()
         bottom = [tmp.verts.new((x, y, -depth / 2)) for x, y in poly]
         top = [tmp.verts.new((x, y, depth / 2)) for x, y in poly]
@@ -583,7 +583,7 @@ def export_fbx_bundle(bundle, prefabs):
     """Write assets/meshes/<bundle>.fbx for Studio's 3D Importer (File > Import 3D).
 
     Every mesh object becomes a node named "<Prefab>__<Part>" with its transform
-    baked in, colours baked to vertex colours (tint parts stay white) and box UVs.
+    baked in, colors baked to vertex colors (tint parts stay white) and box UVs.
     The geometry is pre-rotated 180 degrees about Z so Blender's default FBX axis
     conversion lands it in the same Roblox frame the JSON exporter uses; the
     Studio side (tools/pipeline/assemble_import.luau) then rebuilds each prefab

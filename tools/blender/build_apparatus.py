@@ -1,7 +1,7 @@
 """The money-dropping apparatus: acid vat, wooden derrick, pulleys, engine, console.
 
 Layout (Blender units == studs, Z up, front/player side is -Y):
-  * vat centred on the origin, rim at z=6, acid surface at z~4.85
+  * vat centered on the origin, rim at z=6, acid surface at z~4.85
   * derrick A-frames at x=+-8.6, top crossbeam at z=34.6, boom running back (+Y)
   * chain: plate hook -> front of pulley A -> over to pulley B -> down to the drum
   * engine behind the vat (y~12), computer console in front (y~-11.5)
@@ -132,30 +132,30 @@ def derrick(coll):
     b.build(material="Metal", smooth_angle=35, uv_tile=3)
 
     # pulley wheels (identical meshes -> uploaded once)
-    for name, centre in (("PulleyA", PULLEY_A), ("PulleyB", PULLEY_B)):
+    for name, center in (("PulleyA", PULLEY_A), ("PulleyB", PULLEY_B)):
         b = mm.Builder(name, coll)
         b.lathe([(1.2, -0.38), (PULLEY_R + 0.2, -0.38), (PULLEY_R - 0.05, -0.1), (PULLEY_R - 0.05, 0.1),
-                 (PULLEY_R + 0.2, 0.38), (1.2, 0.38)], loc=centre, rot=(0, 90, 0), color=IRON_LIGHT, segs=28, closed=True)
-        b.cyl(0.45, 0.9, loc=centre, rot=(0, 90, 0), color=BRASS, segs=12)
+                 (PULLEY_R + 0.2, 0.38), (1.2, 0.38)], loc=center, rot=(0, 90, 0), color=IRON_LIGHT, segs=28, closed=True)
+        b.cyl(0.45, 0.9, loc=center, rot=(0, 90, 0), color=BRASS, segs=12)
         for i in range(6):
             a = 60 * i
             ca, sa = math.cos(math.radians(a)), math.sin(math.radians(a))
-            p0 = (centre[0], centre[1] + 0.35 * ca, centre[2] + 0.35 * sa)
-            p1 = (centre[0], centre[1] + 1.25 * ca, centre[2] + 1.25 * sa)
+            p0 = (center[0], center[1] + 0.35 * ca, center[2] + 0.35 * sa)
+            p1 = (center[0], center[1] + 1.25 * ca, center[2] + 1.25 * sa)
             b.beam(p0, p1, 0.22, 0.3, color=IRON_LIGHT)
         b.build(material="Metal", smooth_angle=40, uv_tile=2)
 
 
 def sign(coll):
-    centre = (0.0, 1.6, 38.6)
+    center = (0.0, 1.6, 38.6)
     b = mm.Builder("SignBoard", coll, seed=2)
-    b.cyl(3.0, 0.5, loc=centre, rot=(90, 0, 0), color=WOOD, segs=32)
+    b.cyl(3.0, 0.5, loc=center, rot=(90, 0, 0), color=WOOD, segs=32)
     b.build(material="Wood", smooth_angle=40, uv_tile=4)
     b = mm.Builder("SignRim", coll)
-    b.torus(3.0, 0.22, loc=centre, rot=(90, 0, 0), color=BRASS, segs=36, sides=8)
+    b.torus(3.0, 0.22, loc=center, rot=(90, 0, 0), color=BRASS, segs=36, sides=8)
     for a in range(0, 360, 45):
         ca, sa = math.cos(math.radians(a)), math.sin(math.radians(a))
-        b.sphere(0.16, loc=(centre[0] + 2.62 * ca, centre[1] - 0.27, centre[2] + 2.62 * sa), color=BRASS, segs=8, rings=5)
+        b.sphere(0.16, loc=(center[0] + 2.62 * ca, center[1] - 0.27, center[2] + 2.62 * sa), color=BRASS, segs=8, rings=5)
     b.build(material="Metal", smooth_angle=40)
 
     depth = 1.2  # pokes out of both faces of the board
@@ -169,10 +169,10 @@ def sign(coll):
     for name, parts in shapes.items():
         b = mm.Builder(name, coll)
         for poly, angle in parts:
-            b.extrude(poly, depth, loc=centre, rot=(90, angle, 0), color=WHITE)
+            b.extrude(poly, depth, loc=center, rot=(90, angle, 0), color=WHITE)
         if name == "SymbolDivide":
             for dz in (-1.15, 1.15):
-                b.cyl(0.55, depth, loc=(centre[0], centre[1], centre[2] + dz), rot=(90, 0, 0), color=WHITE, segs=20)
+                b.cyl(0.55, depth, loc=(center[0], center[1], center[2] + dz), rot=(90, 0, 0), color=WHITE, segs=20)
         b.build(material="SmoothPlastic", tint=True, smooth_angle=50, group="Symbols")
 
 
@@ -196,7 +196,7 @@ def plate(coll):
 
 
 def engine(coll):
-    ey = 12.1  # engine centre (y)
+    ey = 12.1  # engine center (y)
     front = ey - 2.5  # front face (-Y side) of the body
     b = mm.Builder("EnginePlinth", coll, seed=12)
     b.box((8.6, 6.4, ENGINE_LIFT), loc=(0, ey, ENGINE_LIFT / 2), color=(150, 146, 140), bevel=0.35, bevel_segments=2, jitter=0.06)

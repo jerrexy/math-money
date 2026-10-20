@@ -206,7 +206,7 @@ local function tableName(tables: { number }, symbol: string): string
 	return table.concat(parts, " ")
 end
 
---- Pick which times table to practise: mostly this level's, sometimes review.
+--- Pick which times table to practice: mostly this level's, sometimes review.
 local function chooseTable(rng: Random, level: number): number
 	local roll = rng:NextNumber()
 	if level == 8 and roll < 0.5 then

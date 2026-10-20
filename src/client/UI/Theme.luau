@@ -1,5 +1,5 @@
 --[[
-	Tiny UI kit: colours, fonts and helpers for building bubbly, kid-friendly UI
+	Tiny UI kit: colors, fonts and helpers for building bubbly, kid-friendly UI
 	in code (no binary UI files to merge).
 
 	Theme.new("Frame", { Size = ..., [Theme.Children] = {...} })

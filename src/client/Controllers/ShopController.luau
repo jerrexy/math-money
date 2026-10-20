@@ -2,6 +2,9 @@
 	Ribbit's Emporium: the shop UI. Opens from the frog merchant's prompt (or the
 	HUD Shop button). Item cards show a slowly spinning 3D preview of the real
 	model in a ViewportFrame.
+
+	The same panel doubles as "My Stuff" (HUD button, works anywhere): every
+	costume, pair of shoes, pet and toy you own, with Wear / Take off buttons.
 ]]
 
 local Players = game:GetService("Players")
@@ -26,6 +29,11 @@ local grid: ScrollingFrame
 local moneyLabel: TextLabel
 local tabButtons: { [string]: TextButton } = {}
 local currentTab = "Seeds"
+local mode = "shop" -- "shop" at Ribbit's counter, "wardrobe" for My Stuff
+local header: Frame
+local titleLabel: TextLabel
+local tabsFrame: Frame
+local emptyLabel: TextLabel
 local spinners: { { model: Model, camera: Camera, center: Vector3, distance: number } } = {}
 local cards: { [string]: { button: TextButton, info: TextLabel } } = {}
 
@@ -156,8 +164,27 @@ local function buildCard(item, order: number)
 	cards[item.id] = { button = button, info = info }
 end
 
+--- Everything you own that can be worn, shown or used (not seeds/decor).
+local function ownedItems(): { any }
+	local profile = controllers.ClientData.profile
+	local list = {}
+	if not profile then
+		return list
+	end
+	for _, category in Catalog.Categories do
+		for _, item in Catalog.ByCategory[category.id] or {} do
+			if not Catalog.isPlaceable(item) and profile.owned[item.id] then
+				table.insert(list, item)
+			end
+		end
+	end
+	return list
+end
+
 local function showTab(id: string)
-	currentTab = id
+	if id ~= "Mine" then
+		currentTab = id
+	end
 	for _, child in grid:GetChildren() do
 		if child:IsA("Frame") then
 			child:Destroy()
@@ -165,9 +192,11 @@ local function showTab(id: string)
 	end
 	table.clear(spinners)
 	table.clear(cards)
-	for i, item in Catalog.ByCategory[id] or {} do
+	local items = if id == "Mine" then ownedItems() else (Catalog.ByCategory[id] or {})
+	for i, item in items do
 		buildCard(item, i)
 	end
+	emptyLabel.Visible = id == "Mine" and #items == 0
 	for tabId, button in tabButtons do
 		Theme.setButtonColor(button, if tabId == id then C.Orange else C.Gray)
 	end
@@ -175,12 +204,21 @@ local function showTab(id: string)
 	grid.CanvasPosition = Vector2.zero
 end
 
-function ShopController.open()
-	if panel.Visible then
+--- open() for the shop, open("wardrobe") for My Stuff.
+function ShopController.open(which: string?)
+	local newMode = if which == "wardrobe" then "wardrobe" else "shop"
+	if panel.Visible and newMode == mode then
 		return
 	end
+	mode = newMode
+	local wardrobe = mode == "wardrobe"
+	titleLabel.Text = if wardrobe then "🎒 My Stuff" else "🐸 Ribbit's Emporium"
+	header.BackgroundColor3 = if wardrobe then C.Purple else C.Green
+	tabsFrame.Visible = not wardrobe
+	grid.Position = UDim2.fromOffset(20, if wardrobe then 86 else 152)
+	grid.Size = UDim2.new(1, -40, 1, if wardrobe then -100 else -166)
 	panel.Visible = true
-	showTab(currentTab)
+	showTab(if wardrobe then "Mine" else currentTab)
 	local scale = panel:FindFirstChildOfClass("UIScale") or Theme.new("UIScale", { Parent = panel })
 	scale.Scale = 0.7
 	Theme.tween(scale, 0.3, { Scale = 1 }, Enum.EasingStyle.Back)
@@ -204,13 +242,13 @@ function ShopController:Start(all)
 		Parent = gui,
 		[Theme.Children] = { Theme.corner(26), Theme.stroke(C.Ink, 4) },
 	})
-	local header = Theme.new("Frame", {
+	header = Theme.new("Frame", {
 		Size = UDim2.new(1, 0, 0, 72),
 		BackgroundColor3 = C.Green,
 		Parent = panel,
 		[Theme.Children] = { Theme.corner(26) },
 	})
-	Theme.text({
+	titleLabel = Theme.text({
 		Size = UDim2.new(0.6, 0, 0, 48),
 		Position = UDim2.fromOffset(22, 12),
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -241,6 +279,7 @@ function ShopController:Start(all)
 	end)
 
 	local tabs = Theme.new("Frame", {
+		Name = "Tabs",
 		Size = UDim2.new(1, -40, 0, 58),
 		Position = UDim2.fromOffset(20, 84),
 		BackgroundTransparency = 1,
@@ -267,6 +306,7 @@ function ShopController:Start(all)
 		end)
 		tabButtons[category.id] = button
 	end
+	tabsFrame = tabs
 
 	grid = Theme.new("ScrollingFrame", {
 		Size = UDim2.new(1, -40, 1, -166),
@@ -291,6 +331,16 @@ function ShopController:Start(all)
 		},
 	})
 
+	emptyLabel = Theme.text({
+		Size = UDim2.new(1, -80, 0, 60),
+		Position = UDim2.fromScale(0.5, 0.5),
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Text = "Nothing here yet! Win money at your machines and visit Ribbit's shop. 🐸",
+		TextColor3 = C.InkSoft,
+		Visible = false,
+		Parent = panel,
+	})
+
 	controllers.ClientData.Changed:Connect(function()
 		if panel.Visible then
 			refreshCards()
@@ -306,7 +356,7 @@ function ShopController:Start(all)
 	task.spawn(function()
 		while true do
 			task.wait(0.5)
-			if panel.Visible then
+			if panel.Visible and mode == "shop" then
 				local world = workspace:FindFirstChild("World")
 				local spot = world and world:FindFirstChild("ShopPrompt", true) :: BasePart?
 				local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart") :: BasePart?

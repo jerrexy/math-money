@@ -6,7 +6,8 @@
 	  Decor     garden ornament; placed like a seed but never grows
 	  Costume   worn on the avatar in ``slot`` (Hat / Face / Waist)
 	  Tool      goes in the backpack
-	  Passive   toggled on/off (effect = "Speed" | "Jump")
+	  Passive   toggled on/off (effect = "Speed" | "Jump"); items sharing a slot
+	            (Feet) replace each other
 	  Pet       follows you around
 
 	Plants and decor are bought one at a time and kept in your seed pouch until
@@ -41,7 +42,7 @@ local items: { Item } = {
 	{ id = "Daisy", kind = "Plant", category = "Seeds", name = "Daisy", price = 15, model = "Daisy", growSeconds = 120, radius = 1.8,
 		description = "Happy little flowers. Grow in 2 minutes!" },
 	{ id = "Tulip", kind = "Plant", category = "Seeds", name = "Tulips", price = 30, model = "Tulip", growSeconds = 180, radius = 1.8,
-		description = "Fancy cups of colour for your garden." },
+		description = "Fancy cups of color for your garden." },
 	{ id = "Sunflower", kind = "Plant", category = "Seeds", name = "Sunflower", price = 60, model = "Sunflower", growSeconds = 300, radius = 2.2,
 		description = "A tall flower with a big sunny smile." },
 	{ id = "Mushroom", kind = "Plant", category = "Seeds", name = "Giant Toadstool", price = 90, model = "Mushroom", growSeconds = 360, radius = 3,
@@ -77,17 +78,17 @@ local items: { Item } = {
 	{ id = "NerdGlasses", kind = "Costume", category = "Costumes", name = "Nerd Glasses", price = 200, model = "NerdGlasses", slot = "Face",
 		description = "+10 smartness. (Not really, but you look smart!)" },
 	{ id = "ChefHat", kind = "Costume", category = "Costumes", name = "Chef Hat", price = 350, model = "ChefHat", slot = "Hat",
-		description = "Cooking up some fresh maths." },
+		description = "Cooking up some fresh math." },
 	{ id = "PirateHat", kind = "Costume", category = "Costumes", name = "Pirate Hat", price = 500, model = "PirateHat", slot = "Hat",
 		description = "Arrr! A true treasure hunter." },
 	{ id = "DuckFloaty", kind = "Costume", category = "Costumes", name = "Duck Floaty", price = 750, model = "DuckFloaty", slot = "Waist",
 		description = "Just in case you fall in. (Don't fall in.)" },
 	{ id = "VikingHelmet", kind = "Costume", category = "Costumes", name = "Viking Helmet", price = 800, model = "VikingHelmet", slot = "Hat",
-		description = "For brave maths warriors." },
+		description = "For brave math warriors." },
 	{ id = "DinoHood", kind = "Costume", category = "Costumes", name = "Dino Hood", price = 1200, model = "DinoHood", slot = "Hat",
-		description = "RAWR means 'I love maths' in dinosaur." },
+		description = "RAWR means 'I love math' in dinosaur." },
 	{ id = "WizardHat", kind = "Costume", category = "Costumes", name = "Wizard Hat", price = 2000, model = "WizardHat", slot = "Hat",
-		description = "Maths is basically magic." },
+		description = "Math is basically magic." },
 	{ id = "RoyalCrown", kind = "Costume", category = "Costumes", name = "Royal Crown", price = 4000, model = "RoyalCrown", slot = "Hat",
 		description = "For the ruler of all numbers." },
 
@@ -96,9 +97,9 @@ local items: { Item } = {
 		description = "Squeak it at your friends!" },
 	{ id = "ConfettiCannon", kind = "Tool", category = "Fun", name = "Confetti Cannon", price = 600, model = "ConfettiCannon",
 		description = "Celebrate every right answer. POP!" },
-	{ id = "SpeedSneakers", kind = "Passive", category = "Fun", name = "Speed Sneakers", price = 900, model = "SpeedSneakers", effect = "Speed",
+	{ id = "SpeedSneakers", kind = "Passive", category = "Fun", name = "Speed Sneakers", price = 900, model = "SpeedSneakers", effect = "Speed", slot = "Feet",
 		description = "Zoom between your machines!" },
-	{ id = "SpringShoes", kind = "Passive", category = "Fun", name = "Spring Shoes", price = 1200, model = "SpringShoes", effect = "Jump",
+	{ id = "SpringShoes", kind = "Passive", category = "Fun", name = "Spring Shoes", price = 1200, model = "SpringShoes", effect = "Jump", slot = "Feet",
 		description = "Boing! Jump way, way higher." },
 	{ id = "PetRock", kind = "Pet", category = "Fun", name = "Pet Rock", price = 1800, model = "PetRock",
 		description = "The best pet ever. Never needs feeding." },

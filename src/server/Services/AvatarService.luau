@@ -2,7 +2,8 @@
 	Everything the shop puts on (or next to) your character:
 	  costumes  -> Accessories in the Hat / Face / Waist slots
 	  tools     -> Rubber Chicken, Confetti Cannon (in the backpack)
-	  passives  -> Speed Sneakers (faster), Spring Shoes (higher jumps)
+	  shoes     -> Speed Sneakers (faster) / Spring Shoes (higher jumps), built onto
+	               the feet; only one pair at a time (the Feet slot)
 	  pets      -> Pet Rock that follows you around
 	Re-applied every time the character spawns or the player changes something.
 ]]
@@ -30,6 +31,22 @@ local BASE_WALK_SPEED = 20
 local FAST_WALK_SPEED = 30
 local BASE_JUMP = 7.2
 local SPRING_JUMP = 16
+local SPRING_LIFT = 1.0 -- R15 characters stand this much taller on their springs
+
+local SHOE_STYLES = {
+	SpeedSneakers = {
+		upper = Color3.fromRGB(232, 54, 66),
+		toe = Color3.fromRGB(250, 250, 250),
+		stripe = Color3.fromRGB(255, 212, 50),
+		spring = false,
+	},
+	SpringShoes = {
+		upper = Color3.fromRGB(70, 140, 240),
+		toe = Color3.fromRGB(250, 250, 250),
+		stripe = Color3.fromRGB(255, 255, 255),
+		spring = true,
+	},
+}
 
 local function assetModel(group: string, name: string): Model?
 	local assets = ReplicatedStorage:FindFirstChild("Assets")
@@ -98,13 +115,14 @@ local function buildAccessory(item): Accessory?
 	return accessory
 end
 
-local function playSound(parent: Instance, id: string, volume: number)
-	if id == "" or id == "rbxassetid://0" then
+local function playSound(parent: Instance, name: string, volume: number)
+	local def = Sounds[name]
+	if not def or def.id == "" then
 		return
 	end
 	local sound = Instance.new("Sound")
-	sound.SoundId = id
-	sound.Volume = volume
+	sound.SoundId = def.id
+	sound.Volume = volume * (def.volume or 1)
 	sound.RollOffMaxDistance = 90
 	sound.Parent = parent
 	sound:Play()
@@ -152,14 +170,110 @@ local function buildTool(item): Tool
 			return
 		end
 		if item.id == "RubberChicken" then
-			playSound(h, Sounds.Squeak, 0.8)
+			playSound(h, "Squeak", 0.8)
 			tool:SetAttribute("Squeak", os.clock())
 		elseif item.id == "ConfettiCannon" then
-			playSound(h, Sounds.Confetti, 0.7)
+			playSound(h, "Confetti", 0.7)
 			tool:SetAttribute("Fire", os.clock())
 		end
 	end)
 	return tool
+end
+
+--- Cartoon shoes built from parts and welded to each foot (they follow the walk
+--- animation). Spring shoes add a coil under each sole.
+local function shoePart(parent: Instance, foot: BasePart, name: string, size: Vector3, cf: CFrame, color: Color3,
+	sphere: boolean?): Part
+	local part = Instance.new("Part")
+	part.Name = name
+	part.Size = size
+	part.CFrame = cf
+	part.Color = color
+	part.Material = Enum.Material.SmoothPlastic
+	part.TopSurface = Enum.SurfaceType.Smooth
+	part.BottomSurface = Enum.SurfaceType.Smooth
+	part.CanCollide = false
+	part.CanQuery = false
+	part.CanTouch = false
+	part.Massless = true
+	if sphere then
+		local mesh = Instance.new("SpecialMesh")
+		mesh.MeshType = Enum.MeshType.Sphere
+		mesh.Parent = part
+	end
+	local weld = Instance.new("WeldConstraint")
+	weld.Part0 = foot
+	weld.Part1 = part
+	weld.Parent = part
+	part.Parent = parent
+	return part
+end
+
+local function buildShoe(parent: Instance, foot: BasePart, style, r15: boolean)
+	local width = (if r15 then math.max(foot.Size.X, 0.7) else 1) * 1.18
+	local length = (if r15 then math.max(foot.Size.Z, 0.8) else 1) * 1.4
+	local base = foot.CFrame * CFrame.new(0, -foot.Size.Y / 2, -length * 0.1)
+	local white = Color3.fromRGB(250, 250, 250)
+	local sole = shoePart(parent, foot, "Sole", Vector3.new(width, 0.24, length), base * CFrame.new(0, 0.12, 0), white)
+	shoePart(parent, foot, "Upper", Vector3.new(width * 0.96, 0.72, length * 0.92), base * CFrame.new(0, 0.4, 0.06), style.upper, true)
+	shoePart(parent, foot, "Toe", Vector3.new(width * 0.84, 0.44, length * 0.44), base * CFrame.new(0, 0.3, -length * 0.3), style.toe, true)
+	for _, side in { -1, 1 } do
+		shoePart(parent, foot, "Stripe", Vector3.new(0.05, 0.14, length * 0.5),
+			base * CFrame.new(side * width * 0.47, 0.42, 0.02) * CFrame.Angles(0.35, 0, 0), style.stripe)
+	end
+	for k = 0, 2 do
+		shoePart(parent, foot, "Lace", Vector3.new(width * 0.42, 0.05, 0.07), base * CFrame.new(0, 0.74 - k * 0.02, -length * 0.05 + k * 0.17), white)
+	end
+	if style.spring and r15 then
+		local pad = shoePart(parent, foot, "SpringPad", Vector3.new(0.12, width * 0.72, width * 0.72),
+			base * CFrame.new(0, -SPRING_LIFT + 0.06, 0) * CFrame.Angles(0, 0, math.rad(90)), Color3.fromRGB(70, 70, 80))
+		pad.Shape = Enum.PartType.Cylinder
+		local top = Instance.new("Attachment")
+		top.Position = Vector3.new(0, -0.12, 0)
+		top.Parent = sole
+		local bottomAtt = Instance.new("Attachment")
+		bottomAtt.Parent = pad
+		bottomAtt.WorldPosition = (base * CFrame.new(0, -SPRING_LIFT + 0.12, 0)).Position
+		local coil = Instance.new("SpringConstraint")
+		coil.Attachment0 = top
+		coil.Attachment1 = bottomAtt
+		coil.Visible = true
+		coil.Coils = 6
+		coil.Radius = 0.3
+		coil.Thickness = 0.08
+		coil.Color = BrickColor.new("Medium stone grey")
+		coil.Stiffness = 0
+		coil.Parent = sole
+	end
+end
+
+local function applyShoes(character: Model, humanoid: Humanoid, itemId: string?)
+	local old = character:FindFirstChild("MM_Shoes")
+	if old then
+		old:Destroy()
+	end
+	local r15 = humanoid.RigType == Enum.HumanoidRigType.R15
+	-- springs need room under the feet: raise R15 characters a little
+	local baseHip = humanoid:GetAttribute("MMBaseHip")
+	if baseHip == nil then
+		baseHip = humanoid.HipHeight
+		humanoid:SetAttribute("MMBaseHip", baseHip)
+	end
+	local style = itemId and SHOE_STYLES[itemId]
+	humanoid.HipHeight = if style and style.spring and r15 then baseHip + SPRING_LIFT else baseHip
+	if not style then
+		return
+	end
+	local folder = Instance.new("Folder")
+	folder.Name = "MM_Shoes"
+	local names = if r15 then { "LeftFoot", "RightFoot" } else { "Left Leg", "Right Leg" }
+	for _, name in names do
+		local foot = character:FindFirstChild(name)
+		if foot and foot:IsA("BasePart") then
+			buildShoe(folder, foot, style, r15)
+		end
+	end
+	folder.Parent = character
 end
 
 local function clearCostumes(character: Model)
@@ -250,13 +364,21 @@ function AvatarService:Apply(player: Player)
 		end
 	end
 
-	local fast = profile.toggles.SpeedSneakers and profile.owned.SpeedSneakers
-	local springy = profile.toggles.SpringShoes and profile.owned.SpringShoes
+	-- one pair of shoes at a time (Spring Shoes win if an old save has both on)
+	local shoes = nil
+	if profile.toggles.SpringShoes and profile.owned.SpringShoes then
+		shoes = "SpringShoes"
+	elseif profile.toggles.SpeedSneakers and profile.owned.SpeedSneakers then
+		shoes = "SpeedSneakers"
+	end
+	applyShoes(character, humanoid, shoes)
+	local fast = shoes == "SpeedSneakers"
+	local springy = shoes == "SpringShoes"
 	humanoid.WalkSpeed = if fast then FAST_WALK_SPEED else BASE_WALK_SPEED
 	humanoid.UseJumpPower = false
 	humanoid.JumpHeight = if springy then SPRING_JUMP else BASE_JUMP
-	character:SetAttribute("SpeedSneakers", fast == true)
-	character:SetAttribute("SpringShoes", springy == true)
+	character:SetAttribute("SpeedSneakers", fast)
+	character:SetAttribute("SpringShoes", springy)
 
 	applyPet(player, character, profile.toggles.PetRock == true and profile.owned.PetRock == true)
 

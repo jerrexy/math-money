@@ -1,7 +1,7 @@
 --[[
 	Little client-side flourishes for shop items:
 	  Rubber Chicken -> squash-and-stretch on every squeak
-	  Confetti Cannon -> a burst of confetti from the barrel
+	  Confetti Cannon -> a blast of real paper confetti that flutters down and lands
 	  Speed Sneakers -> sparkly trail
 	  Spring Shoes   -> "boing" on every jump
 	  Pet Rock       -> happy little hops
@@ -13,38 +13,125 @@ local RunService = game:GetService("RunService")
 local EffectsController = {}
 local controllers
 
-local CONFETTI_COLORS = ColorSequence.new({
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 90, 120)),
-	ColorSequenceKeypoint.new(0.25, Color3.fromRGB(255, 210, 60)),
-	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(90, 220, 120)),
-	ColorSequenceKeypoint.new(0.75, Color3.fromRGB(80, 170, 255)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(190, 110, 255)),
-})
+local CONFETTI_COLORS = {
+	Color3.fromRGB(255, 84, 120),
+	Color3.fromRGB(255, 210, 60),
+	Color3.fromRGB(90, 220, 120),
+	Color3.fromRGB(80, 170, 255),
+	Color3.fromRGB(190, 110, 255),
+	Color3.fromRGB(255, 150, 60),
+	Color3.fromRGB(255, 255, 255),
+}
+local CONFETTI_PER_SHOT = 90
+local CONFETTI_MAX = 400 -- across all players, so a confetti party can't lag anyone
+local CONFETTI_REST = 4 -- seconds a piece lies on the ground before fading
 
+type Piece = {
+	part: BasePart,
+	velocity: Vector3,
+	spin: Vector3,
+	phase: number,
+	age: number,
+	landedAt: number?,
+	ground: number?,
+	nextCheck: number,
+}
+local pieces: { Piece } = {}
+local confettiFolder: Folder
+local groundParams = RaycastParams.new()
+groundParams.FilterType = Enum.RaycastFilterType.Include
+
+--- Real paper confetti: little flat pieces that blast out of the cannon, flutter
+--- down with air drag, land on the ground and fade away a few seconds later.
 local function confetti(tool: Tool)
 	local handle = tool:FindFirstChild("Handle") :: BasePart?
-	if not handle then
+	local character = tool.Parent
+	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if not handle or not root then
 		return
 	end
-	local att = Instance.new("Attachment")
-	att.CFrame = CFrame.new(0, 0, -handle.Size.Z / 2)
-	att.Parent = handle
-	local emitter = Instance.new("ParticleEmitter")
-	emitter.Texture = "rbxasset://textures/particles/sparkles_main.dds"
-	emitter.Color = CONFETTI_COLORS
-	emitter.Size = NumberSequence.new(0.35)
-	emitter.Lifetime = NumberRange.new(1.2, 2)
-	emitter.Speed = NumberRange.new(18, 30)
-	emitter.SpreadAngle = Vector2.new(25, 25)
-	emitter.Acceleration = Vector3.new(0, -25, 0)
-	emitter.RotSpeed = NumberRange.new(-300, 300)
-	emitter.EmissionDirection = Enum.NormalId.Front
-	emitter.Rate = 0
-	emitter.Parent = att
-	emitter:Emit(60)
-	task.delay(2.5, function()
-		att:Destroy()
-	end)
+	local look = root.CFrame.LookVector
+	local up = Vector3.yAxis
+	local origin = handle.Position + look * 1.4 + up * 0.6
+	local aim = (look + up * 1.15).Unit
+	local rng = Random.new()
+	for _ = 1, CONFETTI_PER_SHOT do
+		if #pieces >= CONFETTI_MAX then
+			local oldest = table.remove(pieces, 1)
+			if oldest then
+				oldest.part:Destroy()
+			end
+		end
+		local part = Instance.new("Part")
+		part.Size = Vector3.new(rng:NextNumber(0.4, 0.58), 0.04, rng:NextNumber(0.26, 0.36))
+		part.Color = CONFETTI_COLORS[rng:NextInteger(1, #CONFETTI_COLORS)]
+		part.Material = Enum.Material.SmoothPlastic
+		part.Anchored = true
+		part.CanCollide = false
+		part.CanQuery = false
+		part.CanTouch = false
+		part.CastShadow = false
+		part.CFrame = CFrame.new(origin)
+			* CFrame.Angles(rng:NextNumber(0, 6.28), rng:NextNumber(0, 6.28), rng:NextNumber(0, 6.28))
+		part.Parent = confettiFolder
+		local spread = Vector3.new(rng:NextNumber(-1, 1), rng:NextNumber(-1, 1), rng:NextNumber(-1, 1)) * 0.6
+		table.insert(pieces, {
+			part = part,
+			velocity = (aim + spread).Unit * rng:NextNumber(36, 58),
+			spin = Vector3.new(rng:NextNumber(-9, 9), rng:NextNumber(-9, 9), rng:NextNumber(-9, 9)),
+			phase = rng:NextNumber(0, 6.28),
+			age = 0,
+			landedAt = nil,
+			ground = nil,
+			nextCheck = 0,
+		})
+	end
+	controllers.MachineRenderer.smokePuff(origin, Color3.fromRGB(255, 255, 255), 8)
+end
+
+local function updateConfetti(dt: number)
+	if #pieces == 0 then
+		return
+	end
+	local world = workspace:FindFirstChild("World")
+	groundParams.FilterDescendantsInstances = if world then { workspace.Terrain, world } else { workspace.Terrain }
+	for i = #pieces, 1, -1 do
+		local c = pieces[i]
+		c.age += dt
+		local part = c.part
+		if c.landedAt then
+			local resting = c.age - c.landedAt
+			if resting > CONFETTI_REST then
+				part.Transparency = math.min(1, (resting - CONFETTI_REST) / 1.5)
+				if resting > CONFETTI_REST + 1.5 then
+					part:Destroy()
+					table.remove(pieces, i)
+				end
+			end
+			continue
+		end
+		-- gravity + strong air drag makes paper float; a little sway makes it flutter
+		c.velocity += Vector3.new(0, -30, 0) * dt
+		c.velocity *= 1 - math.min(1, 1.9 * dt)
+		local sway = Vector3.new(math.sin(c.age * 6 + c.phase), 0, math.cos(c.age * 5 + c.phase)) * 2
+		local position = part.Position + (c.velocity + sway) * dt
+		c.nextCheck -= dt
+		if c.nextCheck <= 0 then
+			c.nextCheck = 0.12
+			local hit = workspace:Raycast(position + Vector3.new(0, 3, 0), Vector3.new(0, -80, 0), groundParams)
+			c.ground = if hit then hit.Position.Y else nil
+		end
+		if c.ground and c.velocity.Y < 0 and position.Y <= c.ground + 0.04 then
+			c.landedAt = c.age
+			part.CFrame = CFrame.new(position.X, c.ground + 0.03, position.Z) * CFrame.Angles(0, c.phase, 0)
+		elseif c.age > 12 then
+			part:Destroy()
+			table.remove(pieces, i)
+		else
+			local rotation = part.CFrame.Rotation * CFrame.Angles(c.spin.X * dt, c.spin.Y * dt, c.spin.Z * dt)
+			part.CFrame = CFrame.new(position) * rotation
+		end
+	end
 end
 
 local function squash(tool: Tool)
@@ -127,6 +214,10 @@ end
 
 function EffectsController:Start(all)
 	controllers = all
+	confettiFolder = Instance.new("Folder")
+	confettiFolder.Name = "MM_Confetti"
+	confettiFolder.Parent = workspace
+	RunService.Heartbeat:Connect(updateConfetti)
 	Players.PlayerAdded:Connect(watchPlayer)
 	for _, p in Players:GetPlayers() do
 		watchPlayer(p)

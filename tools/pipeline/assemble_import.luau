@@ -5,7 +5,7 @@
 	The importer uploads every mesh and drops MeshParts named "<Prefab>__<Part>"
 	into the place. For each prefab this script clones those MeshParts into a fresh
 	Model laid out exactly like build/prefabs/<Prefab>.json (sizes, positions,
-	materials, colours, collision, markers), records the mesh ids in
+	materials, colors, collision, markers), records the mesh ids in
 	assets/meshes/asset_ids.json and saves the result as .rbxm into the repo, where
 	Rojo picks it up.
 
@@ -56,8 +56,8 @@ end
 --[[
 	The 3D Importer may turn meshes around the vertical axis relative to how
 	tools/blender exported them (it turned them 180 degrees for this project's FBX).
-	Sizes can't reveal a half-turn, so compare each mesh's vertex "centre of mass"
-	(relative to its bounding-box centre) with the exported JSON and pick the
+	Sizes can't reveal a half-turn, so compare each mesh's vertex "center of mass"
+	(relative to its bounding-box center) with the exported JSON and pick the
 	quarter-turn about Y that best explains the import. One answer for the whole
 	bundle, since every mesh went through the same export/import.
 ]]
@@ -253,7 +253,7 @@ return {
 			manifests[name] = getJson("build/prefabs/" .. name .. ".json")
 		end
 		-- anything not in the scene comes from the recorded mesh ids, so prefabs can be
-		-- re-assembled (new colours, materials, markers...) without importing again
+		-- re-assembled (new colors, materials, markers...) without importing again
 		local AssetService = game:GetService("AssetService")
 		local okIds, ids = pcall(getJson, ID_FILE)
 		ids = if okIds and type(ids) == "table" then ids else {}

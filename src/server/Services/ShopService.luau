@@ -17,6 +17,18 @@ local Remotes = require(Shared.Remotes)
 local ShopService = {}
 local services
 
+--- Switch a passive / pet on; items sharing a slot (both pairs of shoes) swap.
+local function wear(p, item)
+	if item.slot then
+		for _, other in Catalog.ByCategory[item.category] do
+			if other.slot == item.slot and other.id ~= item.id then
+				p.toggles[other.id] = nil
+			end
+		end
+	end
+	p.toggles[item.id] = true
+end
+
 local function buy(player: Player, item): (boolean, string)
 	local profile = services.DataService:Get(player)
 	if not profile then
@@ -37,7 +49,7 @@ local function buy(player: Player, item): (boolean, string)
 			if item.kind == "Costume" and item.slot then
 				p.equipped[item.slot] = item.id
 			elseif item.kind == "Passive" or item.kind == "Pet" then
-				p.toggles[item.id] = true
+				wear(p, item)
 			end
 		end
 	end)
@@ -62,7 +74,11 @@ local function setEquipped(player: Player, item, on: boolean): (boolean, string)
 				p.equipped[item.slot] = nil
 			end
 		elseif item.kind == "Passive" or item.kind == "Pet" then
-			p.toggles[item.id] = if on then true else nil
+			if on then
+				wear(p, item)
+			else
+				p.toggles[item.id] = nil
+			end
 		end
 	end)
 	services.AvatarService:Apply(player)

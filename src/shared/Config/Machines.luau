@@ -1,7 +1,7 @@
 --[[
 	The four money machines on every plot, cheapest to richest.
 
-	Harder maths pays more: a full Division plate is worth four times an Addition
+	Harder math pays more: a full Division plate is worth four times an Addition
 	plate, and every machine level adds Economy.LevelPayBonus on top.
 
 	dropTime   seconds of lowering before the plate reaches the acid

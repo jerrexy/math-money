@@ -5,7 +5,7 @@
 	Rough pacing: a round takes ~40s. A first-grader on Addition level 1 earns
 	about $20 a round (a pack of Daisy seeds), a confident times-tables player on
 	Division level 5 about $160. Shop prices in Catalog.luau go from $15 to $5,000
-	so the big goals take a few hours of real maths practice.
+	so the big goals take a few hours of real math practice.
 ]]
 
 local Economy = {}

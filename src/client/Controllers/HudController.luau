@@ -1,6 +1,6 @@
 --[[
 	Always-on HUD: the money counter (with a rolling count-up), the Home / Shop /
-	Report Card buttons and a hint banner until the player owns a plot.
+	My Stuff / Report Card buttons and a hint banner until the player owns a plot.
 ]]
 
 local Players = game:GetService("Players")
@@ -23,7 +23,7 @@ local shown = 0
 local target = 0
 local holdUntil = 0
 
---- Delay the counter (e.g. while loot is flying towards the player).
+--- Delay the counter (e.g. while loot is flying toward the player).
 function HudController.hold(seconds: number)
 	holdUntil = os.clock() + seconds
 end
@@ -112,7 +112,7 @@ function HudController:Start(all)
 
 	local column = Theme.new("Frame", {
 		Name = "Buttons",
-		Size = UDim2.fromOffset(150, 230),
+		Size = UDim2.fromOffset(150, 300),
 		Position = UDim2.new(0, 16, 0.5, 0),
 		AnchorPoint = Vector2.new(0, 0.5),
 		BackgroundTransparency = 1,
@@ -129,7 +129,10 @@ function HudController:Start(all)
 		Remotes.PlayerAction:FireServer("Shop")
 		task.delay(0.35, controllers.ShopController.open)
 	end)
-	sideButton(column, "ReportButton", "📒 Report", Theme.Colors.Blue, 3, function()
+	sideButton(column, "StuffButton", "🎒 My Stuff", Theme.Colors.Purple, 3, function()
+		controllers.ShopController.open("wardrobe")
+	end)
+	sideButton(column, "ReportButton", "📒 Report", Theme.Colors.Blue, 4, function()
 		controllers.ReportController.toggle()
 	end)
 

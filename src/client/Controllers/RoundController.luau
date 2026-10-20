@@ -496,7 +496,7 @@ local function buildOffer()
 		Position = UDim2.fromOffset(20, 240),
 		TextColor3 = C.InkSoft,
 		FontFace = Theme.Body,
-		Text = "Practice level: pays less and doesn't count towards levelling up",
+		Text = "Practice level: pays less and doesn't count toward leveling up",
 		Parent = offer,
 	})
 	local xpBar = Theme.new("Frame", {
@@ -705,7 +705,7 @@ local function buildCard()
 				Size = UDim2.new(1, -30, 0.7, 0),
 				Position = UDim2.fromScale(0.5, 0.5),
 				AnchorPoint = Vector2.new(0.5, 0.5),
-				Text = "⭐ LEVEL UP! Harder maths = bigger plates! ⭐",
+				Text = "⭐ LEVEL UP! Harder math = bigger plates! ⭐",
 				ZIndex = 9,
 			}),
 		},

@@ -3,7 +3,7 @@
 
 	The server only publishes numbers (attributes + MachineFx events). Each client
 	turns them into motion:
-	  * the plate + loot pile lowering towards the acid (DropBase/DropStart/...)
+	  * the plate + loot pile lowering toward the acid (DropBase/DropStart/...)
 	  * a real 3D chain whose links run from the plate, over both pulleys, down to
 	    the engine's drum, with pulleys / drum / gears spinning to match
 	  * the engine's gauge "eyes" reacting (happy wiggle / angry spin), shakes,
@@ -362,12 +362,12 @@ local function dropOff(st, count: number)
 		if not item then
 			break
 		end
-		-- knock it outwards from the vat's centre, but always land in the acid
-		local centre = Vector3.new(st.pivot.Position.X, acidLevelAt(st), st.pivot.Position.Z)
-		local flat = Vector3.new(item.part.Position.X, centre.Y, item.part.Position.Z) - centre
+		-- knock it outwards from the vat's center, but always land in the acid
+		local center = Vector3.new(st.pivot.Position.X, acidLevelAt(st), st.pivot.Position.Z)
+		local flat = Vector3.new(item.part.Position.X, center.Y, item.part.Position.Z) - center
 		local dir = if flat.Magnitude > 0.1 then flat.Unit else st.pivot.RightVector
 		local radius = math.min(flat.Magnitude + 1.5 + math.random() * 1.5, 5.2)
-		local landing = centre + dir * radius
+		local landing = center + dir * radius
 		flyLoot(item, landing, 0.65, 0, function()
 			smokePuff(landing, Color3.fromRGB(150, 255, 90), 8)
 			controllers.SoundController.play("Sizzle", landing, 0.5, 0.9 + math.random() * 0.3)
@@ -799,14 +799,28 @@ local function onFx(target: Instance, fx: string, payload)
 	end
 end
 
+--- A big model can arrive in pieces: setting up before the Plate, PromptAnchor or
+--- Markers exist would leave the plate frozen (and the prompt never hidden), so
+--- wait until everything the server built is here.
+local function setupWhenReplicated(model: Model)
+	local expected = model:GetAttribute("DescendantCount") or 0
+	local started = os.clock()
+	while model.Parent and #model:GetDescendants() < expected and os.clock() - started < 15 do
+		task.wait(0.1)
+	end
+	if model.Parent then
+		setupMachine(model)
+	end
+end
+
 function MachineRenderer:Start(all)
 	controllers = all
 	CollectionService:GetInstanceAddedSignal(TAG):Connect(function(model)
-		task.defer(setupMachine, model)
+		task.spawn(setupWhenReplicated, model)
 	end)
 	CollectionService:GetInstanceRemovedSignal(TAG):Connect(teardown)
 	for _, model in CollectionService:GetTagged(TAG) do
-		task.defer(setupMachine, model)
+		task.spawn(setupWhenReplicated, model)
 	end
 	Remotes.MachineFx.OnClientEvent:Connect(onFx)
 

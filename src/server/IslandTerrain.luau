@@ -37,7 +37,7 @@ function IslandTerrain.build()
 			end
 		end
 	end
-	-- rolling hills around the edge for a cosy backdrop
+	-- rolling hills around the edge for a cozy backdrop
 	local rng = Random.new(42)
 	for _ = 1, 26 do
 		local angle = rng:NextNumber() * math.pi * 2

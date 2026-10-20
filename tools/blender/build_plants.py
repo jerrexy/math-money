@@ -2,7 +2,7 @@
 
 Every prefab is modelled full-grown with its origin at ground level in the
 middle; GardenService scales it up from a sprout as it grows. Front is -Y.
-Small plants are cheerful SmoothPlastic with vertex colours; trees use Wood
+Small plants are cheerful SmoothPlastic with vertex colors; trees use Wood
 trunks and leafy "Grass"-material canopies so they read as natural.
 """
 
@@ -25,9 +25,9 @@ CREAM = (246, 232, 200)
 BROWN = (120, 76, 44)
 
 
-def _flower_head(b, centre, petal_color, petals=8, r=0.42, petal_len=0.55, face=(0, 0, 0)):
-    cx, cy, cz = centre
-    b.sphere(r * 0.62, loc=centre, rot=face, color=YELLOW, segs=12, rings=6, scale=(1, 1, 0.55))
+def _flower_head(b, center, petal_color, petals=8, r=0.42, petal_len=0.55, face=(0, 0, 0)):
+    cx, cy, cz = center
+    b.sphere(r * 0.62, loc=center, rot=face, color=YELLOW, segs=12, rings=6, scale=(1, 1, 0.55))
     for i in range(petals):
         a = 360.0 * i / petals
         rad = math.radians(a)
@@ -77,15 +77,15 @@ def sunflower(x):
     for side, z in ((-1, 2.6), (1, 4.2)):
         b.sphere(0.9, loc=(side * 0.8, 0, z), rot=(0, side * -25, 0), color=LEAF, segs=10, rings=6, scale=(1.3, 0.25, 0.7))
     # the face looks forwards (-Y) and a little up
-    centre = (0.0, -0.25, top)
+    center = (0.0, -0.25, top)
     tilt = math.radians(20)
     n = (0.0, -math.cos(tilt), math.sin(tilt))  # face normal
     up = (0.0, math.sin(tilt), math.cos(tilt))  # "up" across the face
 
     def on_face(u, v, h):
-        return (centre[0] + u, centre[1] + v * up[1] + h * n[1], centre[2] + v * up[2] + h * n[2])
+        return (center[0] + u, center[1] + v * up[1] + h * n[1], center[2] + v * up[2] + h * n[2])
 
-    b.cyl(1.05, 0.35, loc=centre, rot=(70, 0, 0), color=BROWN, segs=24)
+    b.cyl(1.05, 0.35, loc=center, rot=(70, 0, 0), color=BROWN, segs=24)
     for i in range(18):
         a = math.radians(20 * i)
         p0 = on_face(0.95 * math.cos(a), 0.95 * math.sin(a), 0.0)
@@ -171,9 +171,9 @@ def pine_tree(x):
     return mm.export_prefab("PineTree")
 
 
-def _canopy(b, centre, radius, color, n, spread, rng, subdiv=2, jitter=0.18):
-    cx, cy, cz = centre
-    b.ico(radius, loc=centre, color=color, subdiv=subdiv, jitter=jitter)
+def _canopy(b, center, radius, color, n, spread, rng, subdiv=2, jitter=0.18):
+    cx, cy, cz = center
+    b.ico(radius, loc=center, color=color, subdiv=subdiv, jitter=jitter)
     for i in range(n):
         a = 2 * math.pi * i / n + rng.uniform(-0.3, 0.3)
         r = radius * rng.uniform(0.62, 0.85)

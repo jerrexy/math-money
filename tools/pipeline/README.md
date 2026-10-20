@@ -17,7 +17,7 @@ mm_lib.export_fbx_bundle("MathMoney_All", [...prefab names...])
 ```
 
 Each `build()` writes `build/prefabs/<Prefab>.json`, which records where every
-part sits, its material and colour, collision, and the marker CFrames such as
+part sits, its material and color, collision, and the marker CFrames such as
 the chain path and camera shot. `export_fbx_bundle` writes
 `assets/meshes/MathMoney_All.fbx`, naming each mesh node `<Prefab>__<Part>`.
 
@@ -28,7 +28,7 @@ facing −Z.
 ## 2. Import (Studio)
 
 Use **Home → Import 3D**, pick `MathMoney_All.fbx` and click **Import**. Keep the
-default settings, which import vertex colours. This uploads the meshes to your
+default settings, which import vertex colors. This uploads the meshes to your
 account.
 
 ## 3. Assemble (Studio)

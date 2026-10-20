@@ -8,7 +8,7 @@
 
 	Layout (studs): a grassy island with a long plaza running along X. Four plots
 	face it from the north (z = +90) and four from the south (z = -90). Plot space:
-	origin at the plot centre, local -Z faces the plaza (the gate), machines sit
+	origin at the plot center, local -Z faces the plaza (the gate), machines sit
 	in a row near the back, two soil beds fill the front.
 	Decorative meshes come from ServerStorage.WorldProps when they exist (see
 	tools/pipeline); otherwise simple parts stand in.
@@ -367,7 +367,7 @@ local function buildPlaza(world: Instance, g: number)
 	spawn.TopSurface = Enum.SurfaceType.Smooth
 	spawn.Parent = plaza
 
-	-- the shop (Ribbit's Emporium) faces -X, towards the spawn
+	-- the shop (Ribbit's Emporium) faces -X, toward the spawn
 	local shop = Instance.new("Model")
 	shop.Name = "Shop"
 	local stallCF = CFrame.new(0, 0, 0) * CFrame.Angles(0, math.pi / 2, 0)
@@ -426,7 +426,7 @@ local function buildPlaza(world: Instance, g: number)
 		part({ Name = "Leg", Size = Vector3.new(0.8, 10, 0.8), CFrame = CFrame.new(-52, 5, z), Material = Enum.Material.Wood, Color = WOOD_DARK, Parent = welcome })
 	end
 	board(welcome, CFrame.new(-52, 8, 0) * CFrame.Angles(0, -math.pi / 2, 0), Vector3.new(13, 5, 0.5), "MATH MONEY",
-		"Solve maths • Save the loot • Grow a garden!", Color3.fromRGB(90, 150, 230), "Board")
+		"Solve math • Save the loot • Grow a garden!", Color3.fromRGB(90, 150, 230), "Board")
 	welcome.Parent = plaza
 
 	-- flowers by the welcome sign
@@ -525,7 +525,7 @@ function Build.run(options: { terrain: boolean? }?)
 	for _, side in { 1, -1 } do
 		for _, x in PLOT_X do
 			index += 1
-			-- north plots face -Z, south plots face +Z (towards the plaza)
+			-- north plots face -Z, south plots face +Z (toward the plaza)
 			local origin = CFrame.lookAt(Vector3.new(x, g, side * PLOT_Z), Vector3.new(x, g, 0))
 			buildPlot(index, origin, plots)
 			task.wait()
