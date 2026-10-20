@@ -14,6 +14,8 @@ local ORDER = {
 	"GardenController",
 	"ReportController",
 	"EffectsController",
+	"SafeController",
+	"FrogPlaneController",
 }
 
 local controllers = {}

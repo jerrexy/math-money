@@ -1,10 +1,10 @@
 --[[
 	Everything the shop puts on (or next to) your character:
-	  costumes  -> Accessories in the Hat / Face / Waist slots
+	  costumes  -> Accessories in the Hat / Face / Waist / Back slots
 	  tools     -> Rubber Chicken, Confetti Cannon (in the backpack)
 	  shoes     -> Speed Sneakers (faster) / Spring Shoes (higher jumps), built onto
 	               the feet; only one pair at a time (the Feet slot)
-	  pets      -> Pet Rock that follows you around
+	  pets      -> the Pet Rock or the Baby Frog follows you around (one at a time)
 	Re-applied every time the character spawns or the player changes something.
 ]]
 
@@ -22,10 +22,12 @@ local SLOT_ATTACHMENT = {
 	Hat = "HatAttachment",
 	Face = "FaceFrontAttachment",
 	Waist = "WaistCenterAttachment",
+	Back = "BodyBackAttachment",
 }
 local SLOT_REPLACES = {
 	Hat = Enum.AccessoryType.Hat,
 	Face = Enum.AccessoryType.Face,
+	Back = Enum.AccessoryType.Back,
 }
 local BASE_WALK_SPEED = 20
 local FAST_WALK_SPEED = 30
@@ -88,7 +90,7 @@ local function prepareParts(model: Model): BasePart?
 end
 
 local function buildAccessory(item): Accessory?
-	local model = assetModel("Costumes", item.model)
+	local model = assetModel(item.assetFolder or "Costumes", item.model)
 	if not model then
 		return nil
 	end
@@ -284,16 +286,16 @@ local function clearCostumes(character: Model)
 	end
 end
 
-local function applyPet(player: Player, character: Model, enabled: boolean)
+local function applyPet(player: Player, character: Model, pet)
 	local existing = workspace:FindFirstChild("MM_Pet_" .. player.UserId)
 	if existing then
 		existing:Destroy()
 	end
 	local root = character:FindFirstChild("HumanoidRootPart") :: BasePart?
-	if not enabled or not root then
+	if not pet or not root then
 		return
 	end
-	local model = assetModel("Fun", "PetRock")
+	local model = assetModel(pet.assetFolder or "Fun", pet.model)
 	local body: BasePart
 	if model then
 		body = prepareParts(model) :: BasePart
@@ -317,6 +319,9 @@ local function applyPet(player: Player, character: Model, enabled: boolean)
 		follow.Parent = root
 	end
 	local att = Instance.new("Attachment")
+	-- line up the whole model (not just its biggest part, which may be turned
+	-- inside it) with the player, so the pet faces where you're going
+	att.CFrame = body.CFrame:ToObjectSpace(model:GetPivot()).Rotation
 	att.Parent = body
 	local align = Instance.new("AlignPosition")
 	align.Attachment0 = att
@@ -380,7 +385,14 @@ function AvatarService:Apply(player: Player)
 	character:SetAttribute("SpeedSneakers", fast)
 	character:SetAttribute("SpringShoes", springy)
 
-	applyPet(player, character, profile.toggles.PetRock == true and profile.owned.PetRock == true)
+	local pet = nil
+	for _, item in Catalog.ByCategory.Fun do
+		if item.kind == "Pet" and profile.owned[item.id] and profile.toggles[item.id] then
+			pet = item
+			break
+		end
+	end
+	applyPet(player, character, pet)
 
 	local backpack = player:FindFirstChildOfClass("Backpack")
 	if backpack then

@@ -2,6 +2,7 @@
 	Admin chat commands, for the game's owner and the ADMINS below.
 
 	  !cash 5000    give yourself money ("$5,000", "2.5k" and "1m" work too)
+	  !plane        send the Frog Plane right now
 
 	Each command is a TextChatCommand, so the message is never shown in anyone's
 	chat. Admin money doesn't count as "earned" on the Report Card.
@@ -37,10 +38,6 @@ local function parseAmount(text: string): number?
 end
 
 local function cash(player: Player, text: string)
-	if not AdminService:IsAdmin(player) then
-		Remotes.Notify:FireClient(player, "Nice try! 😄 Money comes from the math machines.", "info")
-		return
-	end
 	local amount = parseAmount(text:match("^%S+%s+(.-)%s*$") or "")
 	if not amount then
 		Remotes.Notify:FireClient(player, "Try: !cash 5000  (or $5,000, 2.5k, 1m)", "info")
@@ -55,6 +52,12 @@ local function cash(player: Player, text: string)
 	print(string.format("[Admin] %s gave themselves %s", player.Name, Format.money(amount)))
 end
 
+local function plane(player: Player)
+	services.FrogPlaneService:LaunchNow()
+	Remotes.Notify:FireClient(player, "🐸✈️ Frog Plane on its way!", "success")
+	print(string.format("[Admin] %s sent the Frog Plane", player.Name))
+end
+
 function AdminService:IsAdmin(player: Player): boolean
 	if ADMINS[player.UserId] then
 		return true
@@ -66,22 +69,33 @@ function AdminService:IsAdmin(player: Player): boolean
 	return game.CreatorId > 0 and player.UserId == game.CreatorId
 end
 
+--- An admin-only chat command; anyone else just gets ``nope``.
+local function addCommand(name: string, alias: string, nope: string, run: (Player, string) -> ())
+	local command = Instance.new("TextChatCommand")
+	command.Name = name
+	command.PrimaryAlias = alias
+	command.AutocompleteVisible = false
+	command.Triggered:Connect(function(source: TextSource, text: string)
+		local player = Players:GetPlayerByUserId(source.UserId)
+		if not player then
+			return
+		end
+		if not AdminService:IsAdmin(player) then
+			Remotes.Notify:FireClient(player, nope, "info")
+			return
+		end
+		run(player, text)
+	end)
+	command.Parent = TextChatService
+end
+
 function AdminService:Init(allServices)
 	services = allServices
 end
 
 function AdminService:Start()
-	local command = Instance.new("TextChatCommand")
-	command.Name = "MM_CashCommand"
-	command.PrimaryAlias = "!cash"
-	command.AutocompleteVisible = false
-	command.Triggered:Connect(function(source: TextSource, text: string)
-		local player = Players:GetPlayerByUserId(source.UserId)
-		if player then
-			cash(player, text)
-		end
-	end)
-	command.Parent = TextChatService
+	addCommand("MM_CashCommand", "!cash", "Nice try! 😄 Money comes from the math machines.", cash)
+	addCommand("MM_PlaneCommand", "!plane", "Nice try! 😄 Watch the sky, the Frog Plane comes every few minutes.", plane)
 end
 
 return AdminService

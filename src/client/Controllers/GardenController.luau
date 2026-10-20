@@ -50,7 +50,7 @@ end
 
 local function templateFor(item): Model
 	local assets = ReplicatedStorage:FindFirstChild("Assets")
-	local group = assets and assets:FindFirstChild(if item.kind == "Plant" then "Plants" else "Decor")
+	local group = assets and assets:FindFirstChild(item.assetFolder or (if item.kind == "Plant" then "Plants" else "Decor"))
 	local source = group and group:FindFirstChild(item.model)
 	if source then
 		return source:Clone()

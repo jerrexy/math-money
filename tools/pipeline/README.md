@@ -16,6 +16,17 @@ build_plants.build(); build_wearables.build(); build_props.build()
 mm_lib.export_fbx_bundle("MathMoney_All", [...prefab names...])
 ```
 
+The Frog Plane event's models are a separate, smaller bundle, so adding or
+changing them doesn't re-upload everything else:
+
+```python
+import build_frogplane; build_frogplane.build(); build_frogplane.export()
+```
+
+That writes `assets/meshes/MathMoney_FrogPlane.fbx`. Import it the same way,
+then run `tools/pipeline/assemble_frogplane.luau` instead of `assemble_all.luau`
+(it writes `assets/models/replicated/FrogPlane.rbxm`).
+
 Each `build()` writes `build/prefabs/<Prefab>.json`, which records where every
 part sits, its material and color, collision, and the marker CFrames such as
 the chain path and camera shot. `export_fbx_bundle` writes

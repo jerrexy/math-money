@@ -17,7 +17,7 @@ local Remotes = require(Shared.Remotes)
 local ShopService = {}
 local services
 
---- Switch a passive / pet on; items sharing a slot (both pairs of shoes) swap.
+--- Switch a passive / pet on; items sharing a slot (both pairs of shoes, the pets) swap.
 local function wear(p, item)
 	if item.slot then
 		for _, other in Catalog.ByCategory[item.category] do
@@ -30,6 +30,9 @@ local function wear(p, item)
 end
 
 local function buy(player: Player, item): (boolean, string)
+	if item.exclusive then
+		return false, "The " .. item.name .. " is only found inside Frog Plane safes! 🐸✈️"
+	end
 	local profile = services.DataService:Get(player)
 	if not profile then
 		return false, "Still loading, try again in a second!"

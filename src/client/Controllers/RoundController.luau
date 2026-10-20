@@ -19,6 +19,7 @@ local Economy = require(Shared.Config.Economy)
 local Format = require(Shared.Util.Format)
 local Machines = require(Shared.Config.Machines)
 local Remotes = require(Shared.Remotes)
+local NumberPad = require(script.Parent.Parent.UI.NumberPad)
 local Theme = require(script.Parent.Parent.UI.Theme)
 
 local RoundController = {}
@@ -730,42 +731,23 @@ local function buildCard()
 	})
 end
 
+local function onPadKey(key: string)
+	if key == "enter" then
+		submit()
+	elseif key == "back" then
+		backspace()
+	else
+		typeDigit(key)
+	end
+end
+
 local function buildPad()
-	local pad = Theme.new("Frame", {
-		Name = "NumberPad",
-		Size = UDim2.fromOffset(330, 340),
+	ui.pad = NumberPad.new({
 		Position = UDim2.new(0, 20, 1, -16),
 		AnchorPoint = Vector2.new(0, 1),
-		BackgroundColor3 = C.Ink,
-		BackgroundTransparency = 0.25,
 		Visible = false,
 		Parent = ui.stack,
-		[Theme.Children] = {
-			Theme.corner(22),
-			Theme.padding(10),
-			Theme.new("UIGridLayout", {
-				CellSize = UDim2.fromOffset(98, 72),
-				CellPadding = UDim2.fromOffset(8, 8),
-				SortOrder = Enum.SortOrder.LayoutOrder,
-				HorizontalAlignment = Enum.HorizontalAlignment.Center,
-			}),
-		},
-	})
-	ui.pad = pad
-	local keys = { "7", "8", "9", "4", "5", "6", "1", "2", "3", "⬅️", "0", "✓" }
-	for i, key in keys do
-		local color = if key == "✓" then C.Green elseif key == "⬅️" then C.Orange else C.Blue
-		local button = Theme.button({ Text = key, Size = UDim2.fromOffset(98, 72), Color = color, LayoutOrder = i, Parent = pad })
-		button.Activated:Connect(function()
-			if key == "✓" then
-				submit()
-			elseif key == "⬅️" then
-				backspace()
-			else
-				typeDigit(key)
-			end
-		end)
-	end
+	}, onPadKey)
 end
 
 local function buildResult()
@@ -846,15 +828,9 @@ function RoundController:Start(all)
 		if not round.active or processed then
 			return
 		end
-		local code = input.KeyCode
-		local digit = string.match(code.Name, "^Keypad(%a+)$") or code.Name
-		local map = { Zero = "0", One = "1", Two = "2", Three = "3", Four = "4", Five = "5", Six = "6", Seven = "7", Eight = "8", Nine = "9" }
-		if map[digit] then
-			typeDigit(map[digit])
-		elseif code == Enum.KeyCode.Backspace then
-			backspace()
-		elseif code == Enum.KeyCode.Return or code == Enum.KeyCode.KeypadEnter then
-			submit()
+		local key = NumberPad.fromKeyCode(input.KeyCode)
+		if key then
+			onPadKey(key)
 		end
 	end)
 

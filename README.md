@@ -31,6 +31,29 @@ The game runs in landscape on phones and tablets. On short phone screens the
 question card and number pad shrink together, and panels move below Roblox's
 top bar, so nothing overlaps.
 
+## 🐸✈️ The Frog Plane
+
+Every 8 minutes Ribbit's frog plane flies over the island and drops frog safes
+on green-and-white parachutes (one per player plus two, between 3 and 8). A
+"✈️ 4:12" countdown sits next to the money counter, and a heads-up pops up 30
+seconds before the plane arrives.
+
+- Each safe lands somewhere on the avenue or the open meadows (never inside a
+  plot) with a pulsing beacon and a 🐸 marker you can see from anywhere.
+- Walk up and crack it: three math problems, one level above your own on the
+  machines you play. Each answer is one number of the combination. A wrong
+  answer shows the right one and gives a new problem. Walking away (or 2
+  minutes without an answer) gives the safe back to everyone.
+- Inside: money worth about 4½ plates at that difficulty, and sometimes (always
+  on your first safe) an **exclusive** that the shop doesn't sell: the Frog
+  Pilot Cap, a Parachute Pack, a Baby Frog pet, a Golden Frog Statue or a Lily
+  Pad Pond. Exclusives show up in 🎒 My Stuff.
+- Unopened safes vanish after 4 minutes. Safe answers count on the Report Card
+  (but don't give machine XP).
+
+The timings, safe counts and prizes are in
+[`src/shared/Config/FrogPlane.luau`](src/shared/Config/FrogPlane.luau).
+
 ## Learning design
 
 | Machine | Levels (8 each) | Plate at L1 → L8 |
@@ -53,7 +76,7 @@ top bar, so nothing overlaps.
   take a few hours of real practice.
 
 All tuning lives in [`src/shared/Config`](src/shared/Config): `Economy.luau`,
-`Machines.luau`, `Catalog.luau` and `Sounds.luau`. Questions come from
+`Machines.luau`, `Catalog.luau`, `FrogPlane.luau` and `Sounds.luau`. Questions come from
 [`src/shared/MathQuestions.luau`](src/shared/MathQuestions.luau).
 
 ## Project layout (Rojo)
@@ -65,10 +88,11 @@ rokit.toml               toolchain (rojo, stylua, selene)
 src/
   server/                ServerScriptService.Server: bootstrap + Services/
     Services/            DataService, PlotService, MachineService, GardenService,
-                         AvatarService, ShopService, AdminService
+                         AvatarService, ShopService, FrogPlaneService, AdminService
   client/                StarterPlayerScripts.Client: bootstrap + Controllers/ + UI/
-    Controllers/         HUD, round UI, machine renderer, shop, garden, report card, ...
-    UI/Theme.luau        tiny UI kit (all UI is built in code)
+    Controllers/         HUD, round UI, machine renderer, shop, garden, report card,
+                         Frog Plane (flyover + safes) and safe cracking, ...
+    UI/                  Theme.luau (tiny UI kit; all UI is built in code), NumberPad.luau
   shared/                ReplicatedStorage.Shared: Config/, MathQuestions, Remotes, Util/
 assets/
   blender/MathMoney.blend   every 3D model (source of truth)
@@ -120,7 +144,10 @@ session.
 **3D models.** Run the scripts in `tools/blender` (Blender 4.1+) to rebuild every
 model. Export with `mm_lib.export_fbx_bundle`, import the FBX once with
 **Import 3D**, then run `tools/pipeline/assemble_all.luau` to turn the import
-into prefabs. Details are in [`tools/pipeline/README.md`](tools/pipeline/README.md).
+into prefabs. The Frog Plane's models are their own small bundle
+(`build_frogplane.py` → `MathMoney_FrogPlane.fbx` → `assemble_frogplane.luau`),
+so adding them never re-uploads the rest. Details are in
+[`tools/pipeline/README.md`](tools/pipeline/README.md).
 
 ## Admin commands
 
@@ -128,6 +155,7 @@ Type these in the chat. Nobody else sees the message.
 
 - `!cash 5000` gives you money. `$5,000`, `2.5k` and `1m` work too, up to
   $1,000,000,000 at a time.
+- `!plane` sends the Frog Plane right now (handy for testing, or for a class).
 
 Only the game's owner and the user ids in `ADMINS` at the top of
 [`src/server/Services/AdminService.luau`](src/server/Services/AdminService.luau)

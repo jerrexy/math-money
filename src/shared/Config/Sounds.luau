@@ -28,6 +28,9 @@ local Sounds: { [string]: SoundDef } = {
 	Confetti = { id = "" },
 	Tick = { id = "" },
 	Whoosh = { id = "" },
+	PlaneEngine = { id = "" }, -- looping propeller hum while the Frog Plane flies over
+	SafeLand = { id = "" }, -- a safe thumps onto the grass
+	SafeOpen = { id = "" }, -- the safe door creaks open
 }
 
 return Sounds

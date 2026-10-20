@@ -41,21 +41,11 @@ local confettiFolder: Folder
 local groundParams = RaycastParams.new()
 groundParams.FilterType = Enum.RaycastFilterType.Include
 
---- Real paper confetti: little flat pieces that blast out of the cannon, flutter
---- down with air drag, land on the ground and fade away a few seconds later.
-local function confetti(tool: Tool)
-	local handle = tool:FindFirstChild("Handle") :: BasePart?
-	local character = tool.Parent
-	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
-	if not handle or not root then
-		return
-	end
-	local look = root.CFrame.LookVector
-	local up = Vector3.yAxis
-	local origin = handle.Position + look * 1.4 + up * 0.6
-	local aim = (look + up * 1.15).Unit
+--- Real paper confetti: little flat pieces that blast out from ``origin`` toward
+--- ``aim``, flutter down with air drag, land and fade away a few seconds later.
+local function confettiBurst(origin: Vector3, aim: Vector3, count: number?)
 	local rng = Random.new()
-	for _ = 1, CONFETTI_PER_SHOT do
+	for _ = 1, count or CONFETTI_PER_SHOT do
 		if #pieces >= CONFETTI_MAX then
 			local oldest = table.remove(pieces, 1)
 			if oldest then
@@ -88,6 +78,21 @@ local function confetti(tool: Tool)
 	end
 	controllers.MachineRenderer.smokePuff(origin, Color3.fromRGB(255, 255, 255), 8)
 end
+
+--- The Confetti Cannon: a blast out of the barrel, up and forwards.
+local function confetti(tool: Tool)
+	local handle = tool:FindFirstChild("Handle") :: BasePart?
+	local character = tool.Parent
+	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if not handle or not root then
+		return
+	end
+	local look = root.CFrame.LookVector
+	local up = Vector3.yAxis
+	confettiBurst(handle.Position + look * 1.4 + up * 0.6, (look + up * 1.15).Unit)
+end
+
+EffectsController.confettiBurst = confettiBurst
 
 local function updateConfetti(dt: number)
 	if #pieces == 0 then

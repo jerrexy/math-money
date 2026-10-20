@@ -30,7 +30,7 @@ local loaded: { [any]: Loaded } = {} -- plot -> state
 
 local function template(item): Model
 	local assets = ReplicatedStorage:FindFirstChild("Assets")
-	local group = assets and assets:FindFirstChild(if item.kind == "Plant" then "Plants" else "Decor")
+	local group = assets and assets:FindFirstChild(item.assetFolder or (if item.kind == "Plant" then "Plants" else "Decor"))
 	local found = group and group:FindFirstChild(item.model)
 	if found then
 		return found :: Model

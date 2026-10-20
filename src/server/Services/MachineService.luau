@@ -327,28 +327,35 @@ local function nextQuestion(rec: Rec)
 	})
 end
 
+--- Count an answer toward the Report Card: totals, the machine's accuracy and
+--- memorised facts. (XP is only for machine rounds; see recordAnswer.)
+local function addPractice(profile, q, correct: boolean)
+	profile.stats.questions += 1
+	local m = profile.machines[q.kind]
+	if correct then
+		profile.stats.correct += 1
+		m.correct += 1
+	else
+		m.wrong += 1
+	end
+	-- only remember "facts" kids memorise (sums to 20, all times tables)
+	local isFact = q.kind == "Multiplication" or q.kind == "Division" or (q.a <= 20 and q.b <= 20)
+	if isFact then
+		local fact = profile.facts[q.key] or { c = 0, w = 0 }
+		if correct then
+			fact.c += 1
+		else
+			fact.w += 1
+		end
+		profile.facts[q.key] = fact
+	end
+end
+
 local function recordAnswer(rec: Rec, q, correct: boolean): boolean
 	local leveledUp = false
 	services.DataService:Update(rec.owner, function(profile)
-		profile.stats.questions += 1
+		addPractice(profile, q, correct)
 		local m = profile.machines[rec.kind]
-		if correct then
-			profile.stats.correct += 1
-			m.correct += 1
-		else
-			m.wrong += 1
-		end
-		-- only remember "facts" kids memorise (sums to 20, all times tables)
-		local isFact = q.kind == "Multiplication" or q.kind == "Division" or (q.a <= 20 and q.b <= 20)
-		if isFact then
-			local fact = profile.facts[q.key] or { c = 0, w = 0 }
-			if correct then
-				fact.c += 1
-			else
-				fact.w += 1
-			end
-			profile.facts[q.key] = fact
-		end
 		-- XP only counts on the hardest level you've unlocked
 		if rec.level == m.level then
 			m.xp = if correct then m.xp + 1 else math.max(0, m.xp - 1)
@@ -588,6 +595,10 @@ local function offer(rec: Rec, player: Player)
 		Remotes.Notify:FireClient(player, "Finish your other round first!", "info")
 		return
 	end
+	if services.FrogPlaneService:IsCracking(player) then
+		Remotes.Notify:FireClient(player, "Finish cracking your safe first!", "info")
+		return
+	end
 	local profile = services.DataService:Get(player)
 	if not profile then
 		return
@@ -615,6 +626,19 @@ end
 ---------------------------------------------------------------------------
 -- Public API
 ---------------------------------------------------------------------------
+
+--- True while the player has a machine round running.
+function MachineService:HasRunningRound(player: Player): boolean
+	return ownerHasRunningRound(player)
+end
+
+--- Count an answer given outside a machine round (e.g. a Frog Plane safe) on the
+--- Report Card, without machine XP.
+function MachineService:RecordPractice(player: Player, q, correct: boolean)
+	services.DataService:Update(player, function(profile)
+		addPractice(profile, q, correct)
+	end)
+end
 
 --- Clone the four machines onto a freshly claimed plot.
 function MachineService:SpawnFor(plot, player: Player)

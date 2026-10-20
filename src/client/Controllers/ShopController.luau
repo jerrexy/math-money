@@ -43,7 +43,7 @@ local GROUPS = { Plant = "Plants", Decor = "Decor", Costume = "Costumes", Tool =
 
 local function previewModel(item): Model
 	local assets = ReplicatedStorage:FindFirstChild("Assets")
-	local group = assets and assets:FindFirstChild(GROUPS[item.kind] or "")
+	local group = assets and assets:FindFirstChild(item.assetFolder or GROUPS[item.kind] or "")
 	local source = group and group:FindFirstChild(item.model)
 	if source then
 		return source:Clone()
@@ -270,7 +270,17 @@ local function showTab(id: string)
 	table.clear(cards)
 	local layout = grid:FindFirstChildOfClass("UIGridLayout") :: UIGridLayout
 	layout.CellSize = UDim2.fromOffset(196, if Theme.isSmall(gui) then 290 else 262)
-	local items = if id == "Mine" then ownedItems() else (Catalog.ByCategory[id] or {})
+	local items = {}
+	if id == "Mine" then
+		items = ownedItems()
+	else
+		-- Frog Plane exclusives aren't for sale
+		for _, item in Catalog.ByCategory[id] or {} do
+			if not item.exclusive then
+				table.insert(items, item)
+			end
+		end
+	end
 	shownIds = idsOf(items)
 	for i, item in items do
 		buildCard(item, i)

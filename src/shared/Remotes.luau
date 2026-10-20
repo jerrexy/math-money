@@ -6,11 +6,14 @@
 	  DataChanged(profile)                 the player's public save data
 	  Notify(text, style)                  toast message
 	  RoundEvent(event, payload)           offer / question / answer / end for the owner
-	  MachineFx(machine, fx, payload)      visual effects everyone sees
+	  MachineFx(model, fx, payload)        visual effects everyone sees (machines, plants, safes)
+	  FrogPlane(event, payload)            "Soon" (heads-up) | "Flight" (path + timing) for everyone
+	  SafeEvent(event, payload)            "Open" | "Correct" | "Wrong" | "Cracked" | "Closed" for the cracker
 
 	Client -> server
 	  RoundAction(action, machine, ...)    "Start" level | "Answer" qid value | "Cancel"
 	  PlayerAction(action, ...)            "Home" | "Shop" | "Toggle" itemId
+	  SafeAction(action, safe, ...)        "Answer" qid value | "Quit"
 	  ShopRequest(action, itemId)          -> ok, message   ("Buy" | "Equip" | "Unequip")
 	  GardenRequest(action, ...)           -> ok, message   ("Plant" itemId cframe | "Dig" plantId)
 ]]
@@ -23,8 +26,11 @@ local DEFINITIONS = {
 	Notify = "RemoteEvent",
 	RoundEvent = "RemoteEvent",
 	MachineFx = "RemoteEvent",
+	FrogPlane = "RemoteEvent",
+	SafeEvent = "RemoteEvent",
 	RoundAction = "RemoteEvent",
 	PlayerAction = "RemoteEvent",
+	SafeAction = "RemoteEvent",
 	ShopRequest = "RemoteFunction",
 	GardenRequest = "RemoteFunction",
 }

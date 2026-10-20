@@ -59,7 +59,7 @@ local function defaultProfile(): Profile
 		toggles = {}, -- passives & pets switched on: [itemId] = true
 		garden = {}, -- { id, item, x, z, r, t } in plot space
 		facts = {}, -- [factKey] = { c = correct, w = wrong }
-		stats = { questions = 0, correct = 0, rounds = 0 },
+		stats = { questions = 0, correct = 0, rounds = 0, safes = 0 },
 		firstJoin = os.time(),
 	}
 end

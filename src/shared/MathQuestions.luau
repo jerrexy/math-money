@@ -206,13 +206,14 @@ local function tableName(tables: { number }, symbol: string): string
 	return table.concat(parts, " ")
 end
 
---- Pick which times table to practice: mostly this level's, sometimes review.
-local function chooseTable(rng: Random, level: number): number
+--- Pick which times table to practice: mostly this level's, sometimes review
+--- (never with ``exact``).
+local function chooseTable(rng: Random, level: number, exact: boolean?): number
 	local roll = rng:NextNumber()
 	if level == 8 and roll < 0.5 then
 		return rng:NextInteger(1, 12)
 	end
-	if level > 1 and roll < 0.3 then
+	if level > 1 and roll < 0.3 and not exact then
 		return pick(rng, TABLES[rng:NextInteger(1, level - 1)])
 	end
 	return pick(rng, TABLES[level])
@@ -243,41 +244,43 @@ local function build(kind: string, a: number, b: number): Question
 	end
 end
 
-local function generateOnce(kind: string, level: number, rng: Random): Question
+local function generateOnce(kind: string, level: number, rng: Random, exact: boolean?): Question
 	level = math.clamp(level, 1, MathQuestions.MaxLevel)
 	if kind == "Addition" or kind == "Subtraction" then
 		local levels = LEVELS[kind]
 		-- occasional review of an easier level keeps old facts fresh
-		local useLevel = if level > 1 and rng:NextNumber() < 0.3 then rng:NextInteger(1, level - 1) else level
+		local review = level > 1 and not exact and rng:NextNumber() < 0.3
+		local useLevel = if review then rng:NextInteger(1, level - 1) else level
 		local a, b = levels[useLevel].gen(rng)
 		if kind == "Addition" and rng:NextNumber() < 0.5 and a < 100 and b < 100 then
 			a, b = b, a
 		end
 		return build(kind, a, b)
 	elseif kind == "Multiplication" then
-		local t = chooseTable(rng, level)
+		local t = chooseTable(rng, level, exact)
 		local other = if rng:NextNumber() < 0.04 then 0 else rng:NextInteger(1, 12)
 		if rng:NextNumber() < 0.5 then
 			return build(kind, t, other)
 		end
 		return build(kind, other, t)
 	elseif kind == "Division" then
-		local divisor = chooseTable(rng, level)
+		local divisor = chooseTable(rng, level, exact)
 		local quotient = rng:NextInteger(1, 12)
 		return build(kind, divisor * quotient, divisor)
 	end
 	error("unknown machine kind " .. tostring(kind))
 end
 
---- Next question, avoiding anything in ``recent`` (a list of fact keys).
-function MathQuestions.generate(kind: string, level: number, rng: Random, recent: { string }?): Question
-	local q = generateOnce(kind, level, rng)
+--- Next question, avoiding anything in ``recent`` (a list of fact keys). ``exact``
+--- skips the easier review questions (the Frog Plane's safes use it).
+function MathQuestions.generate(kind: string, level: number, rng: Random, recent: { string }?, exact: boolean?): Question
+	local q = generateOnce(kind, level, rng, exact)
 	if recent then
 		for _ = 1, 12 do
 			if not table.find(recent, q.key) then
 				break
 			end
-			q = generateOnce(kind, level, rng)
+			q = generateOnce(kind, level, rng, exact)
 		end
 	end
 	return q

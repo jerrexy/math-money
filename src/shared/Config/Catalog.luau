@@ -4,14 +4,17 @@
 	kind:
 	  Plant     seed packet; planted in your garden and grows over growSeconds
 	  Decor     garden ornament; placed like a seed but never grows
-	  Costume   worn on the avatar in ``slot`` (Hat / Face / Waist)
+	  Costume   worn on the avatar in ``slot`` (Hat / Face / Waist / Back)
 	  Tool      goes in the backpack
 	  Passive   toggled on/off (effect = "Speed" | "Jump"); items sharing a slot
 	            (Feet) replace each other
-	  Pet       follows you around
+	  Pet       follows you around (one pet at a time: the Pet slot)
 
 	Plants and decor are bought one at a time and kept in your seed pouch until
 	planted; everything else is bought once and can be equipped forever.
+
+	``exclusive`` items aren't sold: they're found in the safes the Frog Plane
+	drops (see Config/FrogPlane.luau). Their models live in ``assetFolder``.
 ]]
 
 export type Item = {
@@ -26,6 +29,8 @@ export type Item = {
 	radius: number?,
 	slot: string?,
 	effect: string?,
+	exclusive: boolean?,
+	assetFolder: string?,
 }
 
 local Catalog = {}
@@ -101,8 +106,25 @@ local items: { Item } = {
 		description = "Zoom between your machines!" },
 	{ id = "SpringShoes", kind = "Passive", category = "Fun", name = "Spring Shoes", price = 1200, model = "SpringShoes", effect = "Jump", slot = "Feet",
 		description = "Boing! Jump way, way higher." },
-	{ id = "PetRock", kind = "Pet", category = "Fun", name = "Pet Rock", price = 1800, model = "PetRock",
+	{ id = "PetRock", kind = "Pet", category = "Fun", name = "Pet Rock", price = 1800, model = "PetRock", slot = "Pet",
 		description = "The best pet ever. Never needs feeding." },
+
+	-- Frog Plane exclusives: only found inside the Frog Plane's safes -----------
+	{ id = "FrogPilotCap", kind = "Costume", category = "Costumes", name = "Frog Pilot Cap", price = 0, model = "FrogPilotCap",
+		slot = "Hat", exclusive = true, assetFolder = "FrogPlane",
+		description = "Worn by the bravest Frog Plane pilots. Goggles included!" },
+	{ id = "ParachutePack", kind = "Costume", category = "Costumes", name = "Parachute Pack", price = 0, model = "ParachutePack",
+		slot = "Back", exclusive = true, assetFolder = "FrogPlane",
+		description = "Just in case. Pull the red cord!" },
+	{ id = "BabyFrog", kind = "Pet", category = "Fun", name = "Baby Frog", price = 0, model = "BabyFrog", slot = "Pet",
+		exclusive = true, assetFolder = "FrogPlane",
+		description = "A tiny froggy friend in a tiny top hat. Ribbit!" },
+	{ id = "GoldenFrogStatue", kind = "Decor", category = "Decor", name = "Golden Frog Statue", price = 0, model = "GoldenFrogStatue",
+		radius = 2.2, exclusive = true, assetFolder = "FrogPlane",
+		description = "Proof you cracked a Frog Plane safe. So shiny!" },
+	{ id = "LilyPond", kind = "Decor", category = "Decor", name = "Lily Pad Pond", price = 0, model = "LilyPond",
+		radius = 3.3, exclusive = true, assetFolder = "FrogPlane",
+		description = "A little pond for your garden. Frogs approve." },
 }
 
 Catalog.Items = {} :: { [string]: Item }
@@ -125,6 +147,17 @@ end
 --- Seeds and decor are counted in the pouch; everything else is owned once.
 function Catalog.isPlaceable(item: Item): boolean
 	return item.kind == "Plant" or item.kind == "Decor"
+end
+
+--- The Frog Plane prizes (never sold in the shop).
+function Catalog.exclusives(): { Item }
+	local list = {}
+	for _, item in items do
+		if item.exclusive then
+			table.insert(list, item)
+		end
+	end
+	return list
 end
 
 return Catalog
