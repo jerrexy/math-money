@@ -4,7 +4,9 @@
 	model in a ViewportFrame.
 
 	The same panel doubles as "My Stuff" (HUD button, works anywhere): every
-	costume, pair of shoes, pet and toy you own, with Wear / Take off buttons.
+	costume, pair of shoes, pet and toy you own, with Wear / Take off buttons,
+	plus the seeds and decor in your pouch. Plant / Hold put that tool straight
+	in your hand, because Roblox's backpack bar only shows 3 slots on phones.
 ]]
 
 local Players = game:GetService("Players")
@@ -55,9 +57,33 @@ local function previewModel(item): Model
 	return model
 end
 
+--- The backpack tool for a seed, decor item or toy (it may be in your hand).
+local function toolFor(item): Tool?
+	for _, container in { player.Character, player:FindFirstChildOfClass("Backpack") } do
+		if container then
+			for _, tool in container:GetChildren() do
+				if tool:IsA("Tool") and (tool:GetAttribute("PlaceItem") == item.id or tool:GetAttribute("MMTool") == item.id) then
+					return tool
+				end
+			end
+		end
+	end
+	return nil
+end
+
+local function holding(item): boolean
+	local tool = toolFor(item)
+	return tool ~= nil and tool.Parent == player.Character
+end
+
 local function cardState(item, profile): (string, Color3, string)
+	local wardrobe = mode == "wardrobe"
 	if Catalog.isPlaceable(item) then
 		local count = profile and profile.pouch[item.id] or 0
+		if wardrobe then
+			local verb = if item.kind == "Plant" then "Plant" else "Place"
+			return if holding(item) then "Put away" else verb, if holding(item) then C.Orange else C.Green, "In your pouch: " .. count
+		end
 		return "Buy " .. Format.money(item.price), C.Green, (if count > 0 then "In your pouch: " .. count else item.description)
 	end
 	if profile and profile.owned[item.id] then
@@ -66,8 +92,10 @@ local function cardState(item, profile): (string, Color3, string)
 			on = profile.equipped[item.slot] == item.id
 		elseif item.kind == "Passive" or item.kind == "Pet" then
 			on = profile.toggles[item.id] == true
+		elseif wardrobe then
+			return if holding(item) then "Put away" else "Hold", if holding(item) then C.Orange else C.Blue, item.description
 		else
-			return "Owned ✓", C.Gray, "In your backpack!"
+			return "Owned ✓", C.Gray, "Hold it from 🎒 My Stuff!"
 		end
 		return if on then "Take off" else "Wear", if on then C.Orange else C.Blue, item.description
 	end
@@ -88,8 +116,39 @@ local function refreshCards()
 	end
 end
 
+--- My Stuff: put a seed / decor / toy in your hand, or away again.
+local function toggleHold(item)
+	local tool = toolFor(item)
+	local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+	if not tool or not humanoid then
+		controllers.NotifyController.show("Hang on, it's still on its way to your backpack!", "info", 2)
+		return
+	end
+	if tool.Parent == player.Character then
+		humanoid:UnequipTools()
+		refreshCards()
+		return
+	end
+	humanoid:EquipTool(tool)
+	ShopController.close()
+	if Catalog.isPlaceable(item) then
+		local verb = if Theme.isTouch() then "Tap" else "Click"
+		local action = if item.kind == "Plant" then "plant" else "place"
+		controllers.NotifyController.show(
+			string.format("%s the brown soil in your garden to %s your %s!", verb, action, item.name),
+			"info",
+			4
+		)
+	end
+end
+
 local function onCardButton(item)
 	local profile = controllers.ClientData.profile
+	if mode == "wardrobe" and (Catalog.isPlaceable(item) or item.kind == "Tool") then
+		controllers.SoundController.play("Click")
+		toggleHold(item)
+		return
+	end
 	local action = "Buy"
 	if profile and profile.owned[item.id] and not Catalog.isPlaceable(item) then
 		if item.kind == "Costume" then
@@ -139,18 +198,24 @@ local function buildCard(item, order: number)
 		Text = item.name,
 		Parent = card,
 	})
+	-- phones show everything at about half size: give the small print room to
+	-- grow there (the cards are taller too, see showTab)
+	local small = Theme.isSmall(gui)
 	local info = Theme.text({
-		Size = UDim2.new(1, -16, 0, 34),
+		Size = UDim2.new(1, -16, 0, if small then 62 else 34),
 		Position = UDim2.fromOffset(8, 162),
 		FontFace = Theme.Body,
 		TextColor3 = C.InkSoft,
-		TextScaled = false,
+		TextScaled = small,
 		TextSize = 13,
 		TextWrapped = true,
 		TextYAlignment = Enum.TextYAlignment.Top,
 		Text = item.description,
 		Parent = card,
 	})
+	if small then
+		Theme.new("UITextSizeConstraint", { MaxTextSize = 20, Parent = info })
+	end
 	local button = Theme.button({
 		Text = "Buy",
 		Size = UDim2.new(1, -16, 0, 50),
@@ -164,7 +229,7 @@ local function buildCard(item, order: number)
 	cards[item.id] = { button = button, info = info }
 end
 
---- Everything you own that can be worn, shown or used (not seeds/decor).
+--- Everything you own: seeds and decor in your pouch, then things to wear or use.
 local function ownedItems(): { any }
 	local profile = controllers.ClientData.profile
 	local list = {}
@@ -173,12 +238,23 @@ local function ownedItems(): { any }
 	end
 	for _, category in Catalog.Categories do
 		for _, item in Catalog.ByCategory[category.id] or {} do
-			if not Catalog.isPlaceable(item) and profile.owned[item.id] then
+			local owned = if Catalog.isPlaceable(item) then (profile.pouch[item.id] or 0) > 0 else profile.owned[item.id]
+			if owned then
 				table.insert(list, item)
 			end
 		end
 	end
 	return list
+end
+
+local shownIds = ""
+
+local function idsOf(items: { any }): string
+	local ids = {}
+	for _, item in items do
+		table.insert(ids, item.id)
+	end
+	return table.concat(ids, ",")
 end
 
 local function showTab(id: string)
@@ -192,7 +268,10 @@ local function showTab(id: string)
 	end
 	table.clear(spinners)
 	table.clear(cards)
+	local layout = grid:FindFirstChildOfClass("UIGridLayout") :: UIGridLayout
+	layout.CellSize = UDim2.fromOffset(196, if Theme.isSmall(gui) then 290 else 262)
 	local items = if id == "Mine" then ownedItems() else (Catalog.ByCategory[id] or {})
+	shownIds = idsOf(items)
 	for i, item in items do
 		buildCard(item, i)
 	end
@@ -219,9 +298,10 @@ function ShopController.open(which: string?)
 	grid.Size = UDim2.new(1, -40, 1, if wardrobe then -100 else -166)
 	panel.Visible = true
 	showTab(if wardrobe then "Mine" else currentTab)
+	local fit = Theme.fitBelowTopbar(panel, gui, 0.52)
 	local scale = panel:FindFirstChildOfClass("UIScale") or Theme.new("UIScale", { Parent = panel })
-	scale.Scale = 0.7
-	Theme.tween(scale, 0.3, { Scale = 1 }, Enum.EasingStyle.Back)
+	scale.Scale = 0.7 * fit
+	Theme.tween(scale, 0.3, { Scale = fit }, Enum.EasingStyle.Back)
 end
 
 function ShopController.close()
@@ -342,7 +422,13 @@ function ShopController:Start(all)
 	})
 
 	controllers.ClientData.Changed:Connect(function()
-		if panel.Visible then
+		if not panel.Visible then
+			return
+		end
+		-- My Stuff gains or loses cards when you buy, plant or dig something up
+		if mode == "wardrobe" and idsOf(ownedItems()) ~= shownIds then
+			showTab("Mine")
+		else
 			refreshCards()
 		end
 	end)

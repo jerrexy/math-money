@@ -27,7 +27,11 @@ local player = Players.LocalPlayer
 local C = Theme.Colors
 
 local gui: ScreenGui
+local stackScale: UIScale
 local ui: { [string]: any } = {}
+
+-- question card + gap + number pad + bottom margin, in design units
+local STACK_HEIGHT = 270 + 8 + 340 + 16
 
 local round = {
 	busy = false, -- dialog or round on screen
@@ -104,10 +108,24 @@ local function cinematic(on: boolean)
 	end
 end
 
-local function pop(inst: GuiObject, from: number?)
+local function pop(inst: GuiObject, from: number?, to: number?)
 	local scale = inst:FindFirstChildOfClass("UIScale") or Theme.new("UIScale", { Parent = inst })
-	scale.Scale = from or 0.7
-	Theme.tween(scale, 0.35, { Scale = 1 }, Enum.EasingStyle.Back)
+	scale.Scale = (from or 0.7) * (to or 1)
+	Theme.tween(scale, 0.35, { Scale = to or 1 }, Enum.EasingStyle.Back)
+end
+
+--- Short phone screens can't fit the question card above the number pad at full
+--- size: shrink the two together just enough, and keep the card below Roblox's
+--- top bar. Computers and tablets keep the full-size layout.
+local function fitStack()
+	local base = gui:FindFirstChildOfClass("UIScale")
+	local s = if base then base.Scale else 1
+	local height = gui.AbsoluteSize.Y / s
+	local top = GuiService:GetGuiInset().Y / s + 6
+	local k = math.min(1, (height - top) / STACK_HEIGHT)
+	stackScale.Scale = k
+	ui.stack.Size = UDim2.fromScale(1 / k, 1 / k)
+	ui.card.Position = UDim2.fromOffset(20, math.max(92, top / k))
 end
 
 local function shake(inst: GuiObject)
@@ -156,7 +174,7 @@ local function showOffer(offer)
 	round.kind = offer.kind
 	refreshOffer()
 	ui.offer.Visible = true
-	pop(ui.offer)
+	pop(ui.offer, 0.7, Theme.fitBelowTopbar(ui.offer, gui, 0.5))
 	setBusy(true)
 end
 
@@ -288,7 +306,7 @@ local function endRound(payload)
 	ui.resultSub.Text = subtitle
 	ui.result.Visible = result ~= "Abandon"
 	if ui.result.Visible then
-		pop(ui.result)
+		pop(ui.result, 0.7, Theme.fitBelowTopbar(ui.result, gui, 0.42))
 	end
 	if result == "Abandon" then
 		task.delay(0.5, function()
@@ -568,7 +586,7 @@ local function buildCard()
 		AnchorPoint = Vector2.new(0, 0),
 		BackgroundColor3 = C.Paper,
 		Visible = false,
-		Parent = gui,
+		Parent = ui.stack,
 		[Theme.Children] = { Theme.corner(24), Theme.stroke(C.Ink, 4) },
 	})
 	ui.card = card
@@ -721,7 +739,7 @@ local function buildPad()
 		BackgroundColor3 = C.Ink,
 		BackgroundTransparency = 0.25,
 		Visible = false,
-		Parent = gui,
+		Parent = ui.stack,
 		[Theme.Children] = {
 			Theme.corner(22),
 			Theme.padding(10),
@@ -803,10 +821,24 @@ end
 function RoundController:Start(all)
 	controllers = all
 	gui = Theme.screen("Round", 10)
+	-- full-screen holder for the question card + number pad (see fitStack)
+	ui.stack = Theme.new("Frame", {
+		Name = "CardAndPad",
+		Size = UDim2.fromScale(1, 1),
+		BackgroundTransparency = 1,
+		Parent = gui,
+	})
+	stackScale = Theme.new("UIScale", { Parent = ui.stack })
 	buildOffer()
 	buildCard()
 	buildPad()
 	buildResult()
+	fitStack()
+	local function refit()
+		task.defer(fitStack)
+	end
+	gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(refit)
+	gui:FindFirstChildOfClass("UIScale"):GetPropertyChangedSignal("Scale"):Connect(refit)
 
 	Remotes.RoundEvent.OnClientEvent:Connect(onRoundEvent)
 

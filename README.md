@@ -21,9 +21,15 @@ round starts:
 Spend the money at **Ribbit's Emporium** (the frog in the top hat). It sells
 seeds that grow into flowers and forests in real time, garden decor (yes, a
 golden toilet), costumes, and silly stuff: a rubber chicken, a confetti cannon,
-speed sneakers, spring shoes and a pet rock. The **🎒 My Stuff** button lets you
-put things on or take them off anywhere on the map. Money, levels, garden and
+speed sneakers, spring shoes and a pet rock. The **🎒 My Stuff** button lists
+everything you own: put costumes on or take them off, hold your toys, or pick a
+seed to plant in your garden. (On phones Roblox's backpack bar only shows 3
+slots, so My Stuff is the easy way to find things.) Money, levels, garden and
 items are saved.
+
+The game runs in landscape on phones and tablets. On short phone screens the
+question card and number pad shrink together, and panels move below Roblox's
+top bar, so nothing overlaps.
 
 ## Learning design
 

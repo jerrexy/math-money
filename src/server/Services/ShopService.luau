@@ -55,7 +55,8 @@ local function buy(player: Player, item): (boolean, string)
 	end)
 	if placeable then
 		services.GardenService:RefreshTools(player)
-		return true, item.name .. " added to your seed pouch! Equip it from your backpack and click your garden."
+		local verb = if item.kind == "Plant" then "Plant" else "Place"
+		return true, string.format("%s added to your pouch! %s it from 🎒 My Stuff.", item.name, verb)
 	end
 	services.AvatarService:Apply(player)
 	return true, "You got the " .. item.name .. "!"

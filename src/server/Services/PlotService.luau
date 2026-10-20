@@ -71,7 +71,7 @@ local function refreshSigns(plot: Plot)
 		setBoard(claimSign, plot.owner.DisplayName .. "'s Plot", "Money machines + garden")
 		setBoard(gate and gate:FindFirstChild("NameBoard"), plot.owner.DisplayName .. "'s Plot", "")
 	else
-		setBoard(claimSign, "FREE PLOT!", "Press E to make it yours")
+		setBoard(claimSign, "FREE PLOT!", "Walk up to claim it!")
 		setBoard(gate and gate:FindFirstChild("NameBoard"), "Plot " .. plot.index, "Free!")
 	end
 	if plot.prompt then
@@ -106,7 +106,7 @@ local function claim(plot: Plot, player: Player): boolean
 	refreshSigns(plot)
 	services.MachineService:SpawnFor(plot, player)
 	services.GardenService:LoadFor(plot, player)
-	Remotes.Notify:FireClient(player, "Welcome to your plot! Walk up to a machine's computer and press E to earn money.", "success")
+	Remotes.Notify:FireClient(player, "Welcome to your plot! Walk up to a machine's computer to start earning money.", "success")
 	return true
 end
 

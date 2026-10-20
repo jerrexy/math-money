@@ -151,7 +151,9 @@ function HudController:Start(all)
 				Size = UDim2.new(1, -24, 0.7, 0),
 				Position = UDim2.fromScale(0.5, 0.5),
 				AnchorPoint = Vector2.new(0.5, 0.5),
-				Text = "👉 Find a FREE PLOT sign and press E — or tap 🏠 Home!",
+				Text = if Theme.isTouch()
+					then "👉 Walk to a FREE PLOT sign and tap Claim — or tap 🏠 Home!"
+					else "👉 Find a FREE PLOT sign and press E — or click 🏠 Home!",
 			}),
 		},
 	})

@@ -16,6 +16,7 @@ local ReportController = {}
 local controllers
 local C = Theme.Colors
 
+local gui: ScreenGui
 local panel: Frame
 local rows: { [string]: { level: TextLabel, fill: Frame, detail: TextLabel } } = {}
 local cells: { [string]: Frame } = {}
@@ -85,15 +86,16 @@ function ReportController.toggle()
 	panel.Visible = not panel.Visible
 	if panel.Visible then
 		refresh()
+		local fit = Theme.fitBelowTopbar(panel, gui, 0.52)
 		local scale = panel:FindFirstChildOfClass("UIScale") or Theme.new("UIScale", { Parent = panel })
-		scale.Scale = 0.7
-		Theme.tween(scale, 0.3, { Scale = 1 }, Enum.EasingStyle.Back)
+		scale.Scale = 0.7 * fit
+		Theme.tween(scale, 0.3, { Scale = fit }, Enum.EasingStyle.Back)
 	end
 end
 
 function ReportController:Start(all)
 	controllers = all
-	local gui = Theme.screen("Report", 11)
+	gui = Theme.screen("Report", 11)
 	panel = Theme.new("Frame", {
 		Size = UDim2.fromOffset(1000, 600),
 		Position = UDim2.fromScale(0.5, 0.52),

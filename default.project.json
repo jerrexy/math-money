@@ -24,6 +24,12 @@
       }
     },
 
+    "StarterGui": {
+      "$properties": {
+        "ScreenOrientation": "LandscapeSensor"
+      }
+    },
+
     "StarterPlayer": {
       "$properties": {
         "CharacterWalkSpeed": 20,

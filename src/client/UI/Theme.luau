@@ -205,6 +205,37 @@ function Theme.setButtonColor(button: TextButton, color: Color3)
 	button.BackgroundColor3 = color:Lerp(Color3.new(0, 0, 0), 0.3)
 end
 
+--- True on phones and tablets (a touchscreen and no keyboard): use "tap" instead
+--- of "click" / "press E" in hints.
+function Theme.isTouch(): boolean
+	local UserInputService = game:GetService("UserInputService")
+	return UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+end
+
+--- Phones shrink the 1280x720 design to about half size; small print needs help there.
+function Theme.isSmall(gui: ScreenGui): boolean
+	local scale = gui:FindFirstChildOfClass("UIScale")
+	return scale ~= nil and scale.Scale < 0.75
+end
+
+--- Keep a centered panel clear of Roblox's top bar (menu / chat buttons) on short
+--- phone screens: moves it down and returns the scale (<= 1) it needs to still fit.
+--- Where there's room it stays at its designed spot (``centerY``).
+function Theme.fitBelowTopbar(panel: GuiObject, gui: ScreenGui, centerY: number): number
+	local base = gui:FindFirstChildOfClass("UIScale")
+	local s = if base then base.Scale else 1
+	local height = gui.AbsoluteSize.Y / s
+	local top = game:GetService("GuiService"):GetGuiInset().Y / s + 6
+	local panelHeight = panel.Size.Y.Offset
+	if centerY * height - panelHeight / 2 >= top then
+		panel.Position = UDim2.fromScale(0.5, centerY)
+		return 1
+	end
+	local fit = math.min(1, (height - top - 10) / panelHeight)
+	panel.Position = UDim2.new(0.5, 0, 0, top + panelHeight * fit / 2)
+	return fit
+end
+
 --- A full-screen ScreenGui with a UIScale that keeps a 1280x720 design readable
 --- on phones and big monitors alike.
 function Theme.screen(name: string, displayOrder: number?): ScreenGui

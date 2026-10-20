@@ -2,8 +2,8 @@
 	Planting and digging in your garden.
 
 	Equip a seed / decor tool from the backpack: a see-through preview follows
-	the mouse (green on your soil, red elsewhere; R rotates it). Click to plant.
-	Equip the Shovel and click one of your plants to dig it back into the pouch.
+	the mouse (green on your soil, red elsewhere; R rotates it). Click (or tap) to
+	plant. Equip the Shovel and click one of your plants to dig it back into the pouch.
 ]]
 
 local Players = game:GetService("Players")
@@ -14,6 +14,7 @@ local UserInputService = game:GetService("UserInputService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Catalog = require(Shared.Config.Catalog)
 local Remotes = require(Shared.Remotes)
+local Theme = require(script.Parent.Parent.UI.Theme)
 
 local GardenController = {}
 local controllers
@@ -138,7 +139,8 @@ local function onToolActivated(tool: Tool)
 	elseif tool:GetAttribute("Shovel") then
 		local plant = plantUnderMouse()
 		if not plant then
-			controllers.NotifyController.show("Click one of YOUR plants to dig it up.", "info", 2.5)
+			local verb = if Theme.isTouch() then "Tap" else "Click"
+			controllers.NotifyController.show(verb .. " one of YOUR plants to dig it up.", "info", 2.5)
 			return
 		end
 		local ok, message = Remotes.GardenRequest:InvokeServer("Dig", plant:GetAttribute("PlantId"))

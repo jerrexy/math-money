@@ -20,6 +20,11 @@
         "$path": "assets/models/server"
       }
     },
+    "StarterGui": {
+      "$properties": {
+        "ScreenOrientation": "LandscapeSensor"
+      }
+    },
     "StarterPlayer": {
       "$properties": {
         "CharacterWalkSpeed": 20,
